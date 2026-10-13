@@ -14,7 +14,7 @@ import {
   type IconDef,
   type Mode,
 } from '../model'
-import { ColorRow, Group, Section, Segmented, SelectRow, SliderRow } from '../components/rows'
+import { ColorRow, Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
 
 export type DesignTab = 'size' | 'gradient' | 'highlight' | 'card'
 
@@ -246,6 +246,11 @@ export function DesignInspector({
                 value={a.texture}
                 options={TEXTURES}
                 onChange={(texture) => onPatchAppearance({ texture })}
+              />
+              <ToggleRow
+                label="Glass glyph"
+                checked={a.glyphGlass}
+                onChange={(glyphGlass) => onPatchAppearance({ glyphGlass })}
               />
             </>
           ) : null}
