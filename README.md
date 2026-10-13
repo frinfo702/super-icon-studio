@@ -69,7 +69,12 @@ sun/moon switch in the toolbar swaps between them for the whole window.
 
 **Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
 construction circles an app-icon template shows — in the glyph's colour, so the drawing
-reads on any card. It exports with the icon.
+reads on any card — or Liquid glass, a wash over the card with a light along its top edge and
+a shadow along its bottom one. Whichever you pick exports with the icon.
+
+**Glass glyph**, next to the texture, gives the glyph the other half of that material: the
+card shows through it, with a rim light along its top and a shadow under it, so it sits in
+the surface rather than on it.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
