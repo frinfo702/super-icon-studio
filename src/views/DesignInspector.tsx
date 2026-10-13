@@ -1,12 +1,15 @@
 import { ChevronsUpDown } from 'lucide-react'
+import { useState } from 'react'
 import { Footer } from '../components/Footer'
 import { IconCard } from '../components/IconCard'
 import {
   BLEND_MODES,
+  DEFAULT_METRICS,
   GRADIENT_STYLES,
   SHAPES,
   SIZE_PRESETS,
   TEXTURES,
+  defaultFinish,
   type Appearance,
   type BlendMode,
   type GradientStyle,
@@ -81,6 +84,8 @@ export function DesignInspector({
   const a = icon[mode]
   const gradient = a.gradient
   const highlight = a.highlight
+  const defaults = defaultFinish(mode)
+  const [confirmingReset, setConfirmingReset] = useState(false)
 
   return (
     <>
@@ -126,6 +131,7 @@ export function DesignInspector({
                 label="Shape"
                 value={icon.metrics.shape}
                 options={SHAPES}
+                def={DEFAULT_METRICS.shape}
                 onChange={(shape) => onPatch({ metrics: { ...icon.metrics, shape } })}
               />
               <SliderRow
@@ -133,6 +139,7 @@ export function DesignInspector({
                 value={icon.metrics.glyphScale}
                 min={50}
                 max={200}
+                def={DEFAULT_METRICS.glyphScale}
                 onChange={(glyphScale) => onPatch({ metrics: { ...icon.metrics, glyphScale } })}
               />
               {icon.metrics.shape === 'Circle' ? null : (
@@ -141,6 +148,7 @@ export function DesignInspector({
                   value={icon.metrics.cornerRadius}
                   min={0}
                   max={50}
+                  def={DEFAULT_METRICS.cornerRadius}
                   onChange={(cornerRadius) => onPatch({ metrics: { ...icon.metrics, cornerRadius } })}
                 />
               )}
@@ -152,6 +160,7 @@ export function DesignInspector({
               <SliderRow
                 label="Strength"
                 value={gradient.strength}
+                def={defaults.gradient.strength}
                 min={0}
                 max={300}
                 onChange={(strength) =>
@@ -161,18 +170,21 @@ export function DesignInspector({
               <SelectRow
                 label="Style"
                 value={gradient.style}
+                def={defaults.gradient.style}
                 options={GRADIENT_STYLES}
                 onChange={(style: GradientStyle) => onPatchAppearance({ gradient: { ...gradient, style } })}
               />
               <SelectRow
                 label="Blend mode"
                 value={gradient.blend}
+                def={defaults.gradient.blend}
                 options={BLEND_MODES}
                 onChange={(blend: BlendMode) => onPatchAppearance({ gradient: { ...gradient, blend } })}
               />
               <SliderRow
                 label="Offset X"
                 value={gradient.offsetX}
+                def={defaults.gradient.offsetX}
                 min={-100}
                 max={100}
                 onChange={(offsetX) => onPatchAppearance({ gradient: { ...gradient, offsetX } })}
@@ -180,6 +192,7 @@ export function DesignInspector({
               <SliderRow
                 label="Offset Y"
                 value={gradient.offsetY}
+                def={defaults.gradient.offsetY}
                 min={-100}
                 max={100}
                 onChange={(offsetY) => onPatchAppearance({ gradient: { ...gradient, offsetY } })}
@@ -187,6 +200,7 @@ export function DesignInspector({
               <SliderRow
                 label="Size X"
                 value={gradient.sizeX}
+                def={defaults.gradient.sizeX}
                 min={0}
                 max={400}
                 onChange={(sizeX) => onPatchAppearance({ gradient: { ...gradient, sizeX } })}
@@ -194,6 +208,7 @@ export function DesignInspector({
               <SliderRow
                 label="Size Y"
                 value={gradient.sizeY}
+                def={defaults.gradient.sizeY}
                 min={0}
                 max={400}
                 onChange={(sizeY) => onPatchAppearance({ gradient: { ...gradient, sizeY } })}
@@ -206,6 +221,7 @@ export function DesignInspector({
               <ColorRow
                 label="Color"
                 value={highlight.color}
+                def={defaults.highlight.color}
                 onChange={(color) => onPatchAppearance({ highlight: { ...highlight, color } })}
               />
               <SliderRow
@@ -213,11 +229,13 @@ export function DesignInspector({
                 value={highlight.opacity}
                 min={0}
                 max={100}
+                def={defaults.highlight.opacity}
                 onChange={(opacity) => onPatchAppearance({ highlight: { ...highlight, opacity } })}
               />
               <SelectRow
                 label="Blend mode"
                 value={highlight.blend}
+                def={defaults.highlight.blend}
                 options={BLEND_MODES}
                 onChange={(blend: BlendMode) => onPatchAppearance({ highlight: { ...highlight, blend } })}
               />
@@ -226,6 +244,7 @@ export function DesignInspector({
                 value={highlight.blur}
                 min={0}
                 max={20}
+                def={defaults.highlight.blur}
                 onChange={(blur) => onPatchAppearance({ highlight: { ...highlight, blur } })}
               />
             </>
@@ -237,6 +256,7 @@ export function DesignInspector({
               <SelectRow
                 label="Texture"
                 value={a.texture}
+                def="None"
                 options={TEXTURES}
                 onChange={(texture) => onPatchAppearance({ texture })}
               />
@@ -245,13 +265,40 @@ export function DesignInspector({
         </Group>
 
         <div className="px-3 pt-2">
-          <button
-            type="button"
-            onClick={onReset}
-            className="h-7 w-full rounded-md bg-black/[0.05] text-[12px] text-neutral-700 hover:bg-black/[0.09] dark:bg-white/[0.1] dark:text-neutral-200"
-          >
-            Reset to Defaults
-          </button>
+          {confirmingReset ? (
+            <div className="flex flex-col gap-1.5">
+              <p className="px-0.5 text-[11px] leading-snug text-neutral-500 dark:text-neutral-400">
+                Size, gradient and highlight go back to their defaults.
+              </p>
+              <div className="flex gap-1.5">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setConfirmingReset(false)
+                    onReset()
+                  }}
+                  className="h-7 flex-1 rounded-md bg-[var(--accent)] text-[12px] font-medium text-white hover:brightness-105"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setConfirmingReset(false)}
+                  className="h-7 flex-1 rounded-md bg-black/[0.05] text-[12px] text-neutral-700 hover:bg-black/[0.09] dark:bg-white/[0.1] dark:text-neutral-200"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setConfirmingReset(true)}
+              className="h-7 w-full rounded-md bg-black/[0.05] text-[12px] text-neutral-700 hover:bg-black/[0.09] dark:bg-white/[0.1] dark:text-neutral-200"
+            >
+              Reset to Defaults
+            </button>
+          )}
         </div>
       </div>
 
