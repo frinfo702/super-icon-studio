@@ -1,5 +1,6 @@
 import {
   Download,
+  Layers,
   Grid2x2,
   LayoutGrid,
   Moon,
@@ -14,7 +15,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Segmented, ToolButton } from './components/rows'
 import { ICONS, blankIcon } from './data/icons'
-import { buildIconSvg, downloadSvg } from './exportSvg'
+import { buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
 import {
   DEFAULT_METRICS,
@@ -149,6 +150,14 @@ export default function App() {
     if (!selected) return
     const markup = buildIconSvg(selected, mode, size)
     if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}.svg`, markup)
+  }
+
+  const exportSvgLayers = () => {
+    if (!selected) return
+    const { card, glyph } = buildIconLayers(selected, mode, size)
+    const base = `${selected.identifier || selected.name}-${mode}`
+    if (card) downloadSvg(`${base}-card.svg`, card)
+    if (glyph) downloadSvg(`${base}-glyph.svg`, glyph)
   }
 
   const save = async () => {
@@ -315,6 +324,14 @@ export default function App() {
                       onClick={exportSvg}
                     >
                       <Download size={15} />
+                    </ToolButton>
+                  ) : null}
+                  {studio ? (
+                    <ToolButton
+                      title={`Export ${selected?.identifier ?? 'icon'} as two layers (card and glyph)`}
+                      onClick={exportSvgLayers}
+                    >
+                      <Layers size={15} />
                     </ToolButton>
                   ) : null}
                   <ToolButton

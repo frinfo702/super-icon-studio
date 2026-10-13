@@ -115,7 +115,13 @@ function gradientMarkup(g: Gradient, size: number, offset: number) {
  * the same geometry that is on screen. The drop shadow and the inset vignette are drawn here
  * as an SVG filter; the browser preview's gradient blend modes are not carried over.
  */
-export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | null {
+export function buildIconSvg(
+  icon: IconDef,
+  mode: Mode,
+  size: number,
+  /** `all` draws the icon; `card` and `glyph` draw one side of it, on the same canvas. */
+  layer: 'all' | 'card' | 'glyph' = 'all',
+): string | null {
   // The template guides are an overlay in the same card, so the glyph is the other svg.
   const source = document.querySelector(`[data-icon="${icon.id}"] svg:not([data-guide])`)
   if (!source) return null
@@ -145,23 +151,39 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
   const texture = textureMarkup(a.texture, box, ring, radius, short)
   const guides = guideMarkup(a, box, ring, radius)
 
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
-    `<title>${icon.name}</title>`,
-    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
-    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
-    texture.defs,
-    guides.defs,
-    `</defs>`,
+  // The two sides of the icon: what the card carries, and what sits over it. A layer export
+  // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
+  const surface = [
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
     card,
     finish,
     texture.layers,
     guides.layers,
-    glyph.outerHTML,
+  ]
+  const over = [glyph.outerHTML]
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
+    `<title>${icon.name}${layer === 'all' ? '' : ` (${layer})`}</title>`,
+    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
+    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
+    texture.defs,
+    guides.defs,
+    `</defs>`,
+    ...(layer === 'glyph' ? over : surface),
+    ...(layer === 'card' ? [] : over),
     `</svg>`,
   ].join('')
+}
+
+/**
+ * The two files an app icon is layered from: the card, and what sits over it, both at the
+ * size the icon is being designed at, so a layer set stacks back into the plain export.
+ */
+export function buildIconLayers(icon: IconDef, mode: Mode, size: number) {
+  const build = (layer: 'card' | 'glyph') => buildIconSvg(icon, mode, size, layer)
+  return { card: build('card'), glyph: build('glyph') }
 }
 
 export function downloadSvg(filename: string, markup: string) {

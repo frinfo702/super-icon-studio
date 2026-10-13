@@ -58,7 +58,9 @@ The left sidebar holds two sections.
 **Library** — the catalogue as a grid. Selecting an icon fills the inspector: rename it,
 change its identifier, import an SVG of your own, set the card and glyph colours for the
 current appearance. The `+` button adds an icon, the trash deletes one, the download button
-in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue as
+in the toolbar writes the selected icon out as an SVG, and the layers button writes it as the
+two layers it is built from — the card, and the glyph over it — both at the size on screen, so
+a tool that stacks layers rebuilds the same icon. Edits mark the catalogue as
 `Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
