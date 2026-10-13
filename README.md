@@ -57,7 +57,9 @@ The left sidebar holds two sections.
 **Library** — the catalogue as a grid. Selecting an icon fills the inspector: rename it,
 change its identifier, import an SVG of your own, set the card and glyph colours for the
 current appearance. The `+` button adds an icon, the trash deletes one, the download button
-in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue as
+in the toolbar writes the selected icon out as an SVG, and the app-icon button writes it on a
+512 × 512 canvas — the artwork at the ~80% coverage a macOS icon uses, which is what Apple's
+Icon Composer wants to open. Edits mark the catalogue as
 `Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The

@@ -48,6 +48,16 @@ function textureMarkup(texture: Texture, box: { width: number; height: number },
   return { defs, layers }
 }
 
+/** The drawing's own box, or a square canvas twice as wide with the drawing centred in it. */
+function canvasAttributes(canvas: { size: number; coverage: number } | undefined, width: number, height: number) {
+  if (!canvas) return `width="${width}" height="${height}" viewBox="0 0 ${width} ${height}"`
+
+  const side = Math.max(width, height) / canvas.coverage
+  const x = width / 2 - side / 2
+  const y = height / 2 - side / 2
+  return `width="${canvas.size}" height="${canvas.size}" viewBox="${svgNumber(x)} ${svgNumber(y)} ${svgNumber(side)} ${svgNumber(side)}"`
+}
+
 function gradientMarkup(g: Gradient, size: number, offset: number) {
   const alpha = Math.min(1, g.strength / 100) * 0.35
   const fade = Math.max(10, Math.min(95, g.sizeY / 6)) / 100
@@ -76,12 +86,25 @@ function gradientMarkup(g: Gradient, size: number, offset: number) {
 }
 
 /**
+ * How an app icon opens in Apple's Icon Composer, which lays the artwork out on its own
+ * canvas: a macOS icon sits in 824 of 1024 points, so the drawing covers ~80% of a 512 point
+ * canvas with the margin around it. 384 points keeps the card and its highlight ring there.
+ */
+export const ICON_COMPOSER = { size: 512, card: 384, coverage: 824 / 1024 }
+
+/**
  * Writes the finished icon — highlight ring, card, finish and glyph — as a standalone SVG.
  * The glyph is cloned out of the live DOM, so custom imports and bundled glyphs both export
  * the same geometry that is on screen. The drop shadow and the inset vignette are drawn here
  * as an SVG filter; the browser preview's gradient blend modes are not carried over.
  */
-export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | null {
+export function buildIconSvg(
+  icon: IconDef,
+  mode: Mode,
+  size: number,
+  /** Sizes the canvas around the drawing, at `coverage` of it, instead of the drawing itself. */
+  canvas?: { size: number; coverage: number },
+): string | null {
   const source = document.querySelector(`[data-icon="${icon.id}"] svg`)
   if (!source) return null
 
@@ -110,7 +133,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
   const texture = textureMarkup(a.texture, box, ring, radius, short)
 
   return [
-    `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
+    `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
     `<title>${icon.name}</title>`,
     `<defs>${gradientMarkup(a.gradient, short, ring)}`,
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
