@@ -1,6 +1,22 @@
-import { ChevronsUpDown } from 'lucide-react'
+import { ChevronsUpDown, RotateCcw } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { normalizeHex } from '../color'
+
+/** A row shows this only while its value is away from the default it was given. */
+function ResetValue({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      title="Reset to the default"
+      aria-label="Reset to the default"
+      onClick={onClick}
+      // The negative margin keeps the hit area without squeezing the label next to it.
+      className="-mr-1.5 grid size-4 shrink-0 place-items-center rounded text-neutral-400 hover:bg-black/[0.08] hover:text-neutral-600 dark:text-neutral-500 dark:hover:bg-white/[0.12] dark:hover:text-neutral-300"
+    >
+      <RotateCcw size={11} />
+    </button>
+  )
+}
 
 export function Section({ title, hint }: { title: string; hint?: string }) {
   return (
@@ -49,6 +65,7 @@ export function SliderRow({
   step = 1,
   decimals = 0,
   suffix = '%',
+  def,
   onChange,
 }: {
   label: string
@@ -58,6 +75,8 @@ export function SliderRow({
   step?: number
   decimals?: number
   suffix?: string
+  /** The value Reset puts back, when the row has one. */
+  def?: number
   onChange: (v: number) => void
 }) {
   return (
@@ -77,6 +96,7 @@ export function SliderRow({
         {value.toFixed(decimals)}
         {suffix}
       </span>
+      {def !== undefined && value !== def ? <ResetValue onClick={() => onChange(def)} /> : null}
     </div>
   )
 }
@@ -84,15 +104,19 @@ export function SliderRow({
 export function ToggleRow({
   label,
   checked,
+  def,
   onChange,
 }: {
   label: string
   checked: boolean
+  /** The value Reset puts back, when the row has one. */
+  def?: boolean
   onChange: (v: boolean) => void
 }) {
   return (
     <div className="flex h-9 items-center gap-3 px-3">
       <span className="flex-1 truncate text-[13px]">{label}</span>
+      {def !== undefined && checked !== def ? <ResetValue onClick={() => onChange(def)} /> : null}
       <Switch checked={checked} onChange={onChange} />
     </div>
   )
@@ -104,12 +128,15 @@ export function SelectRow<T extends string>({
   options,
   onChange,
   format,
+  def,
 }: {
   label: string
   value: T
   options: readonly T[]
   onChange: (v: T) => void
   format?: (v: T) => string
+  /** The value Reset puts back, when the row has one. */
+  def?: T
 }) {
   return (
     <div className="flex h-9 items-center gap-3 px-3">
@@ -128,6 +155,7 @@ export function SelectRow<T extends string>({
         </select>
         <ChevronsUpDown className="pointer-events-none absolute right-1.5 top-1/2 size-3 -translate-y-1/2 text-neutral-500 dark:text-neutral-400" />
       </div>
+      {def !== undefined && value !== def ? <ResetValue onClick={() => onChange(def)} /> : null}
     </div>
   )
 }
@@ -135,10 +163,12 @@ export function SelectRow<T extends string>({
 export function ColorRow({
   label,
   value,
+  def,
   onChange,
 }: {
   label: string
   value: string
+  def?: string
   onChange: (v: string) => void
 }) {
   return (
@@ -164,6 +194,9 @@ export function ColorRow({
         onChange={(e) => onChange(e.target.value.toUpperCase())}
         className="size-[22px] shrink-0 cursor-default rounded-full border border-black/10 bg-transparent [&::-webkit-color-swatch-wrapper]:p-0 [&::-webkit-color-swatch]:rounded-full [&::-webkit-color-swatch]:border-0 dark:border-white/20"
       />
+      {def !== undefined && value.toUpperCase() !== def.toUpperCase() ? (
+        <ResetValue onClick={() => onChange(def)} />
+      ) : null}
     </div>
   )
 }
