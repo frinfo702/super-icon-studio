@@ -132,7 +132,7 @@ export function DesignInspector({
                 label="Glyph scale"
                 value={icon.metrics.glyphScale}
                 min={50}
-                max={150}
+                max={200}
                 onChange={(glyphScale) => onPatch({ metrics: { ...icon.metrics, glyphScale } })}
               />
               {icon.metrics.shape === 'Circle' ? null : (

@@ -181,7 +181,7 @@ export default function App() {
   }
 
   return (
-    <div className={`app h-full w-full ${dark ? 'dark' : ''}`}>
+    <div className={`app h-full w-full dark:text-neutral-100 ${dark ? 'dark' : ''}`}>
       <div className="flex h-full w-full overflow-hidden bg-[#f7f7f8] dark:bg-[#232325]">
             <div className={`flex shrink-0 flex-col ${showSidebar ? 'w-[228px]' : 'w-0'}`}>
               {showSidebar ? (

@@ -1,5 +1,5 @@
 import { ChevronDown, ChevronUp, GripVertical, Plus, RotateCcw, X } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { IconCard } from '../components/IconCard'
 import { Footer } from '../components/Footer'
 import { Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
@@ -190,23 +190,60 @@ function AddLayer({
   icons: IconDef[]
   onAdd: (id: string) => void
 }) {
+  const [open, setOpen] = useState(false)
+  const root = useRef<HTMLDivElement>(null)
   const available = icons.filter((icon) => !layers.includes(icon.id))
+  const empty = available.length === 0
+
+  useEffect(() => {
+    if (!open) return
+    const onPointerDown = (event: PointerEvent) => {
+      if (!root.current?.contains(event.target as Node)) setOpen(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+    document.addEventListener('pointerdown', onPointerDown)
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown)
+      document.removeEventListener('keydown', onKeyDown)
+    }
+  }, [open])
+
   return (
-    <div className="flex h-7 items-center gap-1.5 rounded-md bg-black/[0.05] px-2 dark:bg-white/[0.08]">
-      <Plus size={11} className="shrink-0 text-neutral-500" />
-      <select
-        value=""
-        disabled={available.length === 0}
-        onChange={(event) => event.target.value && onAdd(event.target.value)}
-        className="min-w-0 flex-1 appearance-none bg-transparent text-[12px] text-neutral-700 dark:text-neutral-300"
+    <div ref={root} className="relative">
+      <button
+        type="button"
+        disabled={empty}
+        aria-expanded={open}
+        onClick={() => setOpen((value) => !value)}
+        className="flex h-7 w-full items-center gap-1.5 rounded-md bg-black/[0.05] px-2 text-[12px] text-neutral-700 enabled:hover:bg-black/[0.08] disabled:opacity-50 dark:bg-white/[0.08] dark:text-neutral-300 dark:enabled:hover:bg-white/[0.12]"
       >
-        <option value="">{available.length === 0 ? 'Every icon is in the deck' : 'Add layer…'}</option>
-        {available.map((icon) => (
-          <option key={icon.id} value={icon.id}>
-            {icon.name}
-          </option>
-        ))}
-      </select>
+        <Plus size={11} className="shrink-0 text-neutral-500 dark:text-neutral-400" />
+        <span className="min-w-0 flex-1 truncate text-left">
+          {empty ? 'Every icon is in the deck' : 'Add layer…'}
+        </span>
+      </button>
+
+      {open ? (
+        <div className="absolute inset-x-0 bottom-full z-10 mb-1 max-h-[212px] overflow-y-auto rounded-lg bg-white p-1 shadow-[0_4px_16px_rgba(0,0,0,0.18)] ring-1 ring-black/10 dark:bg-[#2f2f32] dark:ring-white/15">
+          {available.map((icon) => (
+            <button
+              key={icon.id}
+              type="button"
+              onClick={() => {
+                onAdd(icon.id)
+                setOpen(false)
+              }}
+              className="flex h-8 w-full items-center gap-2 rounded-md px-1.5 text-left hover:bg-black/[0.05] dark:hover:bg-white/[0.08]"
+            >
+              <IconCard icon={icon} mode="light" size={18} className="shrink-0" />
+              <span className="min-w-0 flex-1 truncate text-[12px]">{icon.name}</span>
+            </button>
+          ))}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -237,7 +274,6 @@ export function ComposerCanvas({
 
       <div className="flex flex-col items-center gap-3 pb-20">
         <PreviewTab group={group} icons={icons} mode={mode} unit={13} zoom={zoom} />
-        <PreviewTab group={group} icons={icons} mode={mode} unit={9} zoom={zoom} />
       </div>
 
       <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">

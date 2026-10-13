@@ -1,0 +1,1309 @@
+{
+  "version": 1,
+  "icons": [
+    {
+      "id": "icon-0",
+      "name": "Browser",
+      "identifier": "browser",
+      "glyph": "compass",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#0061FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#0061FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-1",
+      "name": "Codex",
+      "identifier": "codex",
+      "glyph": "atom",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#3B3F6B",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#3B3F6B",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-2",
+      "name": "Git Changes",
+      "identifier": "gitChanges",
+      "glyph": "git",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#34C759",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#34C759",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-3",
+      "name": "Shell",
+      "identifier": "shell",
+      "glyph": "terminal",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#1C1C1E",
+        "glyph": "#D4FF3F",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#1C1C1E",
+        "glyph": "#D4FF3F",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-4",
+      "name": "Superlogical",
+      "identifier": "superlogical",
+      "glyph": "spline",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#BEE9F7",
+        "glyph": "#0F5F6E",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#BEE9F7",
+        "glyph": "#0F5F6E",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-5",
+      "name": "Trailhead",
+      "identifier": "trailhead",
+      "glyph": "waypoints",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#4B4BE8",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#4B4BE8",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-6",
+      "name": "Metrics",
+      "identifier": "metrics",
+      "glyph": "gauge",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#FF9500",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#FF9500",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-7",
+      "name": "Storage",
+      "identifier": "storage",
+      "glyph": "database",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#8E8E93",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#8E8E93",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-8",
+      "name": "Secrets",
+      "identifier": "secrets",
+      "glyph": "key",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#AF52DE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#AF52DE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-9",
+      "name": "Mailbox",
+      "identifier": "mailbox",
+      "glyph": "mail",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#64D2FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#64D2FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-10",
+      "name": "Registry",
+      "identifier": "registry",
+      "glyph": "package",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#A2845E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#A2845E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-11",
+      "name": "Scheduler",
+      "identifier": "scheduler",
+      "glyph": "timer",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#E91E63",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#E91E63",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-12",
+      "name": "Webhooks",
+      "identifier": "webhooks",
+      "glyph": "zap",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#FFB020",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#FFB020",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-13",
+      "name": "Auth",
+      "identifier": "auth",
+      "glyph": "fingerprint",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#C4241C",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#C4241C",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-14",
+      "name": "Logs",
+      "identifier": "logs",
+      "glyph": "scan",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#1C1C1E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#1C1C1E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-15",
+      "name": "Telemetry",
+      "identifier": "telemetry",
+      "glyph": "activity",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#30C79B",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#30C79B",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-16",
+      "name": "Cloud Sync",
+      "identifier": "cloudSync",
+      "glyph": "cloud",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#64D2FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#64D2FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-17",
+      "name": "Backups",
+      "identifier": "backups",
+      "glyph": "drive",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#8E8E93",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#8E8E93",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-18",
+      "name": "Deploy",
+      "identifier": "deploy",
+      "glyph": "rocket",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#AF52DE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#AF52DE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-19",
+      "name": "Firewall",
+      "identifier": "firewall",
+      "glyph": "shield",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#1C1C1E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#1C1C1E",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-20",
+      "name": "Region",
+      "identifier": "region",
+      "glyph": "globe",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#0061FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#0061FF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-21",
+      "name": "Queue",
+      "identifier": "queue",
+      "glyph": "layers",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#4B4BE8",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#4B4BE8",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-22",
+      "name": "Studio",
+      "identifier": "studio",
+      "glyph": "blocks",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#00C7BE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#00C7BE",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-23",
+      "name": "Circuit",
+      "identifier": "circuit",
+      "glyph": "circuit",
+      "metrics": {
+        "glyphScale": 125,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#3B3F6B",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#3B3F6B",
+        "glyph": "#FFFFFF",
+        "texture": "Liquid metal",
+        "gradient": {
+          "strength": 150,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      }
+    },
+    {
+      "id": "icon-new-24-1791869249174",
+      "name": "Untitled Icon",
+      "identifier": "untitledIcon",
+      "glyph": "box",
+      "metrics": {
+        "glyphScale": 200,
+        "cornerRadius": 30,
+        "shape": "Square"
+      },
+      "light": {
+        "card": "#FFFFFF",
+        "glyph": "#FFFFFF",
+        "texture": "None",
+        "gradient": {
+          "strength": 200,
+          "style": "Radial",
+          "blend": "Normal",
+          "offsetX": 0,
+          "offsetY": -48,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 100,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "dark": {
+        "card": "#232325",
+        "glyph": "#FFFFFF",
+        "texture": "Liquid metal",
+        "gradient": {
+          "strength": 226,
+          "style": "Radial",
+          "blend": "Soft light",
+          "offsetX": 100,
+          "offsetY": -50,
+          "sizeX": 300,
+          "sizeY": 250
+        },
+        "highlight": {
+          "color": "#FFFFFF",
+          "opacity": 40,
+          "blend": "Normal",
+          "blur": 0
+        }
+      },
+      "artworkFile": "untitledIcon.svg"
+    }
+  ],
+  "group": {
+    "id": "group-preview-tab",
+    "name": "Preview Tab",
+    "layers": [
+      "icon-3",
+      "icon-4",
+      "icon-1",
+      "icon-0"
+    ],
+    "depth": 4,
+    "layout": "Horizontal",
+    "autoGap": true,
+    "gap": 11,
+    "scale": true,
+    "scaleAmount": 15,
+    "rotate": true,
+    "rotateAmount": 5,
+    "offset": true,
+    "offsetAmount": 0,
+    "reserveSlots": false,
+    "glyphOffset": true,
+    "glyphOffsetAmount": 30,
+    "animation": {
+      "duration": 0.45,
+      "stagger": 0.08,
+      "style": "Spring"
+    }
+  }
+}
