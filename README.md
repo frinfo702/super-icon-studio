@@ -32,6 +32,7 @@ start and writes it back when you press Save.
   on the next Save, and Revert drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
+- The folder is tracked, artwork included, so a build and a deploy carry the same set.
 
 `pnpm dev` and `pnpm preview` both serve this. A build also writes a snapshot of the folder
 to `icons.json`, so a static build with no middleware behind it still opens with the icon set
@@ -64,9 +65,13 @@ in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue 
 inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius,
 peeled corner),
 **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
-blend mode, blur), and **Card** (base colour, texture). Gradient, Highlight, Card and
-texture are stored per appearance, so light and dark are tuned separately; the sun/moon
-switch in the toolbar swaps between them for the whole window.
+blend mode, blur), and **Card** (base colour, background, texture). Gradient, Highlight,
+Card and texture are stored per appearance, so light and dark are tuned separately; the
+sun/moon switch in the toolbar swaps between them for the whole window.
+
+**Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
+construction circles an app-icon template shows — in the glyph's colour, so the drawing
+reads on any card. It exports with the icon.
 
 **Peeled corner** folds the bottom-right corner back and shows the card's underside, with the
 fold's shadow across the card. Like the shape and the corner radius it is set once, not per

@@ -1,12 +1,14 @@
 import { hexToRgba, mixHex } from '../color'
 import { GLYPHS } from '../glyphs'
 import {
+  BLUEPRINT,
   GLYPH_BASE,
   METAL_BANDS,
   PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
+  type Background,
   type Gradient,
   type IconDef,
   type Mode,
@@ -49,6 +51,40 @@ function peelLayer(card: string, short: number) {
         boxShadow: `-${short * 0.02}px -${short * 0.02}px ${short * 0.07}px rgba(0, 0, 0, 0.3)`,
       }}
     />
+  )
+}
+
+/** The guides an app-icon template draws, as an overlay in the glyph colour. */
+function guideLayer(background: Background, glyph: string) {
+  if (background === 'Plain') return null
+  const { inset, radius, grid, circles, stroke, opacity } = BLUEPRINT
+  const edge = 100 - inset
+
+  return (
+    <svg
+      aria-hidden
+      data-guide
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      fill="none"
+      stroke={glyph}
+      strokeWidth={stroke}
+      strokeOpacity={opacity}
+    >
+      {background === 'Blueprint' ? (
+        <>
+          <rect x={inset} y={inset} width={edge - inset} height={edge - inset} rx={radius} />
+          {circles.map((r) => (
+            <circle key={r} cx="50" cy="50" r={r} />
+          ))}
+          <path d={`M${inset} ${inset} L${edge} ${edge} M${edge} ${inset} L${inset} ${edge}`} />
+        </>
+      ) : null}
+      {grid.map((v) => (
+        <path key={v} d={`M${v} ${inset} L${v} ${edge} M${inset} ${v} L${edge} ${v}`} />
+      ))}
+    </svg>
   )
 }
 
@@ -117,6 +153,8 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
   const highlight = hexToRgba(a.highlight.color, a.highlight.opacity / 100)
   const blur = a.highlight.blur * (short / 72)
   const peel = icon.metrics.peel ? peelLayer(a.card, short) : null
+  const guides = guideLayer(a.background, a.glyph)
+
   const texture = textureLayer(a.texture)
 
   return (
@@ -141,6 +179,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
           .join(', '),
       }}
     >
+      {guides}
       {texture ? (
         <span
           aria-hidden
