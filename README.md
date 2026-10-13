@@ -32,6 +32,7 @@ start and writes it back when you press Save.
   on the next Save, and Revert drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
+- The folder is tracked, artwork included, so a build and a deploy carry the same set.
 
 `pnpm dev` and `pnpm preview` both serve this. A build also writes a snapshot of the folder
 to `icons.json`, so a static build with no middleware behind it still opens with the icon set
