@@ -268,11 +268,13 @@ export function Segmented<T extends string>({
 
 export function ToolButton({
   active,
+  disabled,
   onClick,
   title,
   children,
 }: {
   active?: boolean
+  disabled?: boolean
   onClick?: () => void
   title: string
   children: ReactNode
@@ -280,10 +282,11 @@ export function ToolButton({
   return (
     <button
       type="button"
+      disabled={disabled}
       title={title}
       aria-label={title}
       onClick={onClick}
-      className={`grid size-[26px] place-items-center rounded-[7px] transition-colors ${
+      className={`grid size-[26px] place-items-center rounded-[7px] transition-colors disabled:opacity-40 disabled:hover:bg-transparent ${
         active
           ? 'bg-black/[0.08] text-neutral-800 dark:bg-white/[0.16] dark:text-white'
           : 'text-neutral-600 hover:bg-black/5 dark:text-neutral-300 dark:hover:bg-white/10'

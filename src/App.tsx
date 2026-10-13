@@ -9,16 +9,19 @@ import {
   PanelRight,
   Pencil,
   Plus,
+  Redo2,
   Rows3,
   Scaling,
   Spline,
   Sun,
+  Undo2,
 } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Segmented, ToolButton } from './components/rows'
 import { ICONS, blankIcon } from './data/icons'
 import { ICON_COMPOSER, buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
+import { commit, redo, start, undo, type Timeline } from './history'
 import {
   DEFAULT_LABEL,
   DEFAULT_METRICS,
@@ -45,15 +48,22 @@ import { LibraryInspector } from './views/LibraryInspector'
 
 type Section = 'library' | 'design'
 type Workspace = 'studio' | 'composer'
+/** One step of history: the icons and the deck they are arranged in, as they were together. */
+type Snapshot = { icons: IconDef[]; group: IconGroup }
+
+/** An edit must be still for this long before it is written and becomes a step back. */
+const SETTLE = 400
+
+const START_GROUP: IconGroup = {
+  ...DEFAULT_GROUP,
+  layers: [ICONS[3].id, ICONS[4].id, ICONS[1].id, ICONS[0].id],
+}
 
 export default function App() {
   const [icons, setIcons] = useState(ICONS)
-  const [saved, setSaved] = useState(ICONS)
-  const [group, setGroup] = useState<IconGroup>(() => ({
-    ...DEFAULT_GROUP,
-    layers: [ICONS[3].id, ICONS[4].id, ICONS[1].id, ICONS[0].id],
-  }))
-  const [savedGroup, setSavedGroup] = useState(group)
+  const [group, setGroup] = useState(START_GROUP)
+  const [written, setWritten] = useState<Snapshot>(() => ({ icons: ICONS, group: START_GROUP }))
+  const [timeline, setTimeline] = useState<Timeline<Snapshot>>(() => start({ icons: ICONS, group: START_GROUP }))
   const [selectedId, setSelectedId] = useState(ICONS[0].id)
   const [section, setSection] = useState<Section>('library')
   const [workspace, setWorkspace] = useState<Workspace>('studio')
@@ -73,10 +83,11 @@ export default function App() {
   const dark = mode === 'dark'
   const preset = SIZE_PRESETS.find((entry) => entry.id === presetId) ?? SIZE_PRESETS[0]
   const selected = icons.find((icon) => icon.id === selectedId)
-  const dirty = useMemo(
-    () => JSON.stringify(icons) !== JSON.stringify(saved) || JSON.stringify(group) !== JSON.stringify(savedGroup),
-    [icons, saved, group, savedGroup],
-  )
+  // What is on screen, against the folder and against the last step of history.
+  const saving = icons !== written.icons || group !== written.group
+  const edited = icons !== timeline.present.icons || group !== timeline.present.group
+  const canUndo = edited || timeline.past.length > 0
+  const canRedo = !edited && timeline.future.length > 0
 
   // The icons folder is the catalogue; the bundled set is only what a fresh clone starts from.
   useEffect(() => {
@@ -85,13 +96,53 @@ export default function App() {
       if (cancelled || !payload) return
       const loaded = hydrate(payload)
       setIcons(loaded)
-      setSaved(loaded)
+      setWritten((prev) => ({ ...prev, icons: loaded }))
+      setTimeline((prev) => start({ icons: loaded, group: prev.present.group }))
       setSelectedId((current) => (loaded.some((icon) => icon.id === current) ? current : loaded[0]?.id ?? ''))
     })
     return () => {
       cancelled = true
     }
   }, [])
+
+  /**
+   * An edit writes itself once it stops: a drag on a slider or a component lands as one save
+   * rather than one per frame, and the settled edit is one step back.
+   */
+  useEffect(() => {
+    if (!edited && !saving) return
+    const snapshot: Snapshot = { icons, group }
+    const timer = setTimeout(async () => {
+      if (edited) setTimeline((prev) => commit(prev, snapshot))
+      if (saving) {
+        const stored = await writeLibrary(snapshot.icons, snapshot.group)
+        if (stored) setWritten(snapshot)
+        else console.warn('Super Icon Studio: could not save the icon set')
+      }
+    }, SETTLE)
+    return () => clearTimeout(timer)
+  }, [icons, group, edited, saving])
+
+  /** A step back: an edit that has not settled yet is the step it takes first. */
+  const undoEdit = () => {
+    const next = undo(edited ? commit(timeline, { icons, group }) : timeline)
+    if (!next) return
+    setTimeline(next)
+    setIcons(next.present.icons)
+    setGroup(next.present.group)
+    // A state that comes back can be missing the icon that was selected when it went.
+    setSelectedId((current) =>
+      next.present.icons.some((icon) => icon.id === current) ? current : next.present.icons[0]?.id ?? '',
+    )
+  }
+
+  const redoEdit = () => {
+    const next = redo(edited ? commit(timeline, { icons, group }) : timeline)
+    if (!next) return
+    setTimeline(next)
+    setIcons(next.present.icons)
+    setGroup(next.present.group)
+  }
 
   const patchIcon = (patch: Partial<IconDef>) =>
     setIcons((prev) => prev.map((icon) => (icon.id === selectedId ? { ...icon, ...patch } : icon)))
@@ -227,18 +278,6 @@ export default function App() {
     }
   }
 
-  const save = async () => {
-    const written = await writeLibrary(icons, group)
-    setSaved(icons)
-    setSavedGroup(group)
-    if (!written) console.warn('Super Icon Studio: could not save the icon set')
-  }
-
-  const revert = () => {
-    setIcons(saved)
-    setGroup(savedGroup)
-  }
-
   const nav: { id: Section; label: string; icon: React.ReactNode }[] = [
     { id: 'library', label: 'Library', icon: <LayoutGrid size={15} /> },
     { id: 'design', label: 'Design', icon: <Pencil size={15} /> },
@@ -285,9 +324,9 @@ export default function App() {
                           >
                             {item.icon}
                             {item.label}
-                            {dirty ? (
+                            {saving ? (
                               <span className="ml-auto rounded-[5px] bg-[#007aff]/12 px-1.5 py-px text-[10px] font-medium text-[#007aff] dark:bg-[#0a84ff]/20 dark:text-[#409cff]">
-                                Unsaved
+                                Saving
                               </span>
                             ) : null}
                           </button>
@@ -345,6 +384,14 @@ export default function App() {
                       <PanelLeft size={15} />
                     </ToolButton>
                   ) : null}
+                  <div className="flex items-center gap-0.5">
+                    <ToolButton title="Undo" disabled={!canUndo} onClick={undoEdit}>
+                      <Undo2 size={15} />
+                    </ToolButton>
+                    <ToolButton title="Redo" disabled={!canRedo} onClick={redoEdit}>
+                      <Redo2 size={15} />
+                    </ToolButton>
+                  </div>
                   <Segmented
                     tone="neutral"
                     value={mode}
@@ -465,30 +512,23 @@ export default function App() {
                 {!studio ? (
                   <ComposerInspector
                     group={group}
-                    dirty={dirty}
                     tab={composerTab}
                     onTab={setComposerTab}
                     onPatch={patchGroup}
-                    onRevert={revert}
-                    onSave={save}
                   />
                 ) : isLibrary ? (
                   <LibraryInspector
                     icon={selected}
                     mode={mode}
-                    dirty={dirty}
                     onPatch={patchIcon}
                     onReplaceSvg={replaceSvg}
                     onDelete={deleteIcon}
-                    onRevert={revert}
-                    onSave={save}
                   />
                 ) : (
                   <DesignInspector
                     icon={selected}
                     mode={mode}
                     tab={tab}
-                    dirty={dirty}
                     presetId={presetId}
                     onTabChange={setTab}
                     onPresetChange={changePreset}
@@ -498,8 +538,6 @@ export default function App() {
                     onPatchLabel={patchLabel}
                     onRemoveLabel={removeLabel}
                     onReset={resetDesign}
-                    onRevert={revert}
-                    onSave={save}
                   />
                 )}
               </aside>
