@@ -1,4 +1,4 @@
-import { mixHex } from './color'
+import { hexToRgba, mixHex } from './color'
 import {
   BLUEPRINT,
   GLASS,
@@ -8,7 +8,9 @@ import {
   cardBox,
   cardRadius,
   cardShortSide,
+  gradientLine,
   labelBox,
+  labelRing,
   type Appearance,
   type Label,
   type Gradient,
@@ -99,31 +101,38 @@ function guideMarkup(a: Appearance, box: { width: number; height: number }, ring
 
 }
 
-function gradientMarkup(g: Gradient, size: number, offset: number) {
-  const alpha = Math.min(1, g.strength / 100) * 0.35
-  const fade = Math.max(10, Math.min(95, g.sizeY / 6)) / 100
-  const stops = `<stop offset="0" stop-color="#FFFFFF" stop-opacity="${alpha}"/><stop offset="${fade}" stop-color="#FFFFFF" stop-opacity="0"/>`
+/** The card's own gradient — the light wash over its colour — as SVG. */
+function gradientMarkup(
+  g: Gradient,
+  box: { width: number; height: number },
+  at: { x: number; y: number },
+  id = 'finish',
+  fade = 1,
+) {
+  const alpha = Math.min(1, g.strength / 100) * 0.35 * fade
+  const reach = Math.max(10, Math.min(95, g.sizeY / 6)) / 100
+  const stops = `<stop offset="0" stop-color="#FFFFFF" stop-opacity="${alpha}"/><stop offset="${reach}" stop-color="#FFFFFF" stop-opacity="0"/>`
 
   if (g.style === 'Linear') {
     const radians = ((180 + g.offsetX) * Math.PI) / 180
     const dx = Math.sin(radians)
     const dy = -Math.cos(radians)
-    const length = Math.abs(dx) * size + Math.abs(dy) * size
-    const cx = (50 + g.offsetX) / 100
-    const cy = (50 + g.offsetY) / 100
-    const x1 = cx * size - (dx * length) / 2
-    const y1 = cy * size - (dy * length) / 2
-    return `<linearGradient id="finish" gradientUnits="userSpaceOnUse" x1="${offset + x1}" y1="${offset + y1}" x2="${offset + x1 + dx * length}" y2="${offset + y1 + dy * length}">${stops}</linearGradient>`
+    const length = Math.abs(dx) * box.width + Math.abs(dy) * box.height
+    const cx = ((50 + g.offsetX) / 100) * box.width
+    const cy = ((50 + g.offsetY) / 100) * box.height
+    const x1 = cx - (dx * length) / 2
+    const y1 = cy - (dy * length) / 2
+    return `<linearGradient id="${id}" gradientUnits="userSpaceOnUse" x1="${at.x + x1}" y1="${at.y + y1}" x2="${at.x + x1 + dx * length}" y2="${at.y + y1 + dy * length}">${stops}</linearGradient>`
   }
 
   // Angular gradients are not expressible in SVG 1.1; they export as the radial equivalent.
-  const cx = ((50 + g.offsetX) / 100) * size
-  const cy = ((50 + g.offsetY) / 100) * size
-  const rx = (g.sizeX / 100) * size
-  const ry = (g.sizeY / 100) * size
+  const cx = ((50 + g.offsetX) / 100) * box.width
+  const cy = ((50 + g.offsetY) / 100) * box.height
+  const rx = (g.sizeX / 100) * box.width
+  const ry = (g.sizeY / 100) * box.height
   const squash = rx > 0 ? ry / rx : 1
-  const transform = `translate(${offset + cx} ${offset + cy}) scale(1 ${squash}) translate(${-offset - cx} ${-offset - cy})`
-  return `<radialGradient id="finish" gradientUnits="userSpaceOnUse" cx="${offset + cx}" cy="${offset + cy}" r="${rx}" gradientTransform="${transform}">${stops}</radialGradient>`
+  const transform = `translate(${at.x + cx} ${at.y + cy}) scale(1 ${squash}) translate(${-at.x - cx} ${-at.y - cy})`
+  return `<radialGradient id="${id}" gradientUnits="userSpaceOnUse" cx="${at.x + cx}" cy="${at.y + cy}" r="${rx}" gradientTransform="${transform}">${stops}</radialGradient>`
 }
 
 /** The glass surface, as SVG gradients the way the preview draws them in CSS. */
@@ -180,12 +189,13 @@ function peelMarkup(card: string, box: { width: number; height: number }, ring: 
 }
 
 /**
- * The components' badges, measured with the canvas the preview would use, so a badge fits its
- * text the same way on screen and in the file.
+ * A component's badge: its line of text on the background it asks for — its own colour or
+ * gradient, or the card's own finish — with the ring it draws. Measured with the canvas the
+ * preview would use, so a badge fits its text the same way on screen and in the file.
  */
-function labelMarkup(label: Label, box: { width: number; height: number }, ring: number, short: number) {
+function labelMarkup(label: Label, a: Appearance, box: { width: number; height: number }, ring: number, short: number) {
   const text = label.text.trim()
-  if (!text) return ''
+  if (!text) return { defs: '', markup: '' }
 
   const { fontSize, height, radius, cx, cy } = labelBox(label, box, short)
   const context = document.createElement('canvas').getContext('2d')
@@ -193,12 +203,45 @@ function labelMarkup(label: Label, box: { width: number; height: number }, ring:
   const width = Math.min(box.width * 0.92, context!.measureText(text).width + fontSize * 2 * (LABEL_PADDING + 0.15))
   const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
-  return [
-    label.background
-      ? `<rect x="${svgNumber(ring + cx - width / 2)}" y="${svgNumber(ring + cy - height / 2)}" width="${svgNumber(width)}" height="${svgNumber(height)}" rx="${svgNumber(radius)}" fill="${label.fill}"/>`
-      : '',
-    `<text x="${svgNumber(ring + cx)}" y="${svgNumber(ring + cy)}" fill="${label.color}" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif" font-size="${svgNumber(fontSize)}" font-weight="600" text-anchor="middle" dominant-baseline="central" letter-spacing="${svgNumber(fontSize * 0.04)}">${escaped}</text>`,
-  ].join('')
+  const alpha = label.opacity / 100
+  const x = ring + cx - width / 2
+  const y = ring + cy - height / 2
+  const face = `x="${svgNumber(x)}" y="${svgNumber(y)}" width="${svgNumber(width)}" height="${svgNumber(height)}" rx="${svgNumber(radius)}" ry="${svgNumber(radius)}"`
+  const stroke = Math.max(1, height * 0.032)
+  const highlight = labelRing(label, a)
+
+  const background = (() => {
+    switch (label.background) {
+      case 'None':
+        return { defs: '', markup: '' }
+      case 'Solid':
+        return { defs: '', markup: `<rect ${face} fill="${hexToRgba(label.fill, alpha)}"/>` }
+      case 'Gradient': {
+        const line = gradientLine(label.angle, { width, height })
+        return {
+          defs: `<linearGradient id="labelFill-${label.id}" gradientUnits="userSpaceOnUse" x1="${svgNumber(x + line.x1)}" y1="${svgNumber(y + line.y1)}" x2="${svgNumber(x + line.x2)}" y2="${svgNumber(y + line.y2)}"><stop offset="0" stop-color="${label.fill}" stop-opacity="${alpha}"/><stop offset="1" stop-color="${label.fillEnd}" stop-opacity="${alpha}"/></linearGradient>`,
+          markup: `<rect ${face} fill="url(#labelFill-${label.id})"/>`,
+        }
+      }
+      // Inherit: the card's colour under the card's own gradient, drawn into the badge.
+      default:
+        return {
+          defs: gradientMarkup(a.gradient, { width, height }, { x, y }, `labelFinish-${label.id}`, alpha),
+          markup: `<rect ${face} fill="${hexToRgba(a.card, alpha)}"/><rect ${face} fill="url(#labelFinish-${label.id})"/>`,
+        }
+    }
+  })()
+
+  return {
+    defs: background.defs,
+    markup: [
+      background.markup,
+      highlight.opacity > 0
+        ? `<rect x="${svgNumber(x + stroke / 2)}" y="${svgNumber(y + stroke / 2)}" width="${svgNumber(width - stroke)}" height="${svgNumber(height - stroke)}" rx="${svgNumber(Math.max(0, radius - stroke / 2))}" ry="${svgNumber(Math.max(0, radius - stroke / 2))}" fill="none" stroke="${highlight.color}" stroke-opacity="${highlight.opacity / 100}" stroke-width="${svgNumber(stroke)}"/>`
+        : '',
+      `<text x="${svgNumber(ring + cx)}" y="${svgNumber(ring + cy)}" fill="${label.color}" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif" font-size="${svgNumber(fontSize)}" font-weight="600" text-anchor="middle" dominant-baseline="central" letter-spacing="${svgNumber(fontSize * 0.04)}">${escaped}</text>`,
+    ].join(''),
+  }
 }
 
 /**
@@ -264,7 +307,7 @@ export function buildIconSvg(
   const peel = icon.metrics.peel ? peelMarkup(a.card, box, ring, radius, short) : null
   const guides = guideMarkup(a, box, ring, radius)
   const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
-  const label = a.labels.map((component) => labelMarkup(component, box, ring, short)).join('')
+  const labels = a.labels.map((component) => labelMarkup(component, a, box, ring, short))
 
   // The two sides of the icon: what the card carries, and what sits over it. A layer export
   // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
@@ -278,18 +321,19 @@ export function buildIconSvg(
     glass?.layers ?? '',
     peel?.layers ?? '',
   ]
-  const over = [glyph.outerHTML, label].filter(Boolean)
+  const over = [glyph.outerHTML, ...labels.map((entry) => entry.markup)].filter(Boolean)
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
     `<title>${icon.name}${layer === 'all' ? '' : ` (${layer})`}</title>`,
-    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
+    `<defs>${gradientMarkup(a.gradient, { width: short, height: short }, { x: ring, y: ring })}`,
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
     texture.defs,
     guides.defs,
     glass?.defs ?? '',
     peel?.defs ?? '',
     glyphGlass,
+    ...labels.map((entry) => entry.defs),
     `</defs>`,
     ...(layer === 'glyph' ? [] : surface),
     ...(layer === 'card' ? [] : over),

@@ -1,5 +1,15 @@
 import assert from 'node:assert'
-import { DEFAULT_LABEL, labelBox, nextLabelId, type IconDef, type Label } from '../src/model.ts'
+import {
+  DEFAULT_HIGHLIGHT,
+  DEFAULT_LABEL,
+  gradientLine,
+  labelBox,
+  labelRing,
+  nextLabelId,
+  type Appearance,
+  type IconDef,
+  type Label,
+} from '../src/model.ts'
 
 const label = (patch: Partial<Label> = {}): Label => ({ ...DEFAULT_LABEL, id: 'label-1', text: 'BETA', ...patch })
 const square = { width: 100, height: 100 }
@@ -38,5 +48,32 @@ const icon = (light: string[], dark: string[] = []): IconDef =>
 assert.equal(nextLabelId(icon([])), 'label-1', 'the first component is label-1')
 assert.equal(nextLabelId(icon(['label-1', 'label-2'])), 'label-3', 'the next free name follows the list')
 assert.equal(nextLabelId(icon(['label-2'], ['label-1'])), 'label-3', 'both appearances are taken into account')
+
+// A badge's own gradient runs the way CSS reads an angle: 0 points up, 90 to the right, and
+// the line is long enough to span the badge at it. The exporter draws the preview's line.
+const near = (value: number, target: number, message: string) =>
+  assert.ok(Math.abs(value - target) < 1e-9, `${message} (got ${value})`)
+
+const badge = { width: 40, height: 20 }
+const down = gradientLine(180, badge)
+near(down.x1, 20, 'a gradient running down starts at the middle of the top edge')
+near(down.y1, 0, 'and at the badge\'s top edge')
+near(down.x2, 20, 'and ends below the middle')
+near(down.y2, 20, 'at the bottom edge, the badge being the shorter side')
+const across = gradientLine(90, badge)
+near(across.x1, 0, 'a gradient running right starts at the left edge')
+near(across.y1, 10, 'and at the middle of it')
+near(across.x2 - across.x1, 40, 'and spans the badge\'s width')
+near(across.y2, across.y1, 'without tilting')
+
+// A component's ring comes from the card's highlight while it inherits, and from its own two
+// values otherwise, so one component can follow the card and the next can stand on its own.
+const card = { highlight: { ...DEFAULT_HIGHLIGHT, color: '#123456', opacity: 40 } } as Appearance
+const inherited = labelRing(label({ highlight: 'Inherit' }), card)
+assert.equal(inherited.color, '#123456', 'an inherited ring takes the card\'s colour')
+assert.equal(inherited.opacity, 40, 'and its opacity')
+const own = labelRing(label(), card)
+assert.equal(own.color, DEFAULT_LABEL.highlightColor, 'a component of its own keeps its colour')
+assert.equal(own.opacity, DEFAULT_LABEL.highlightOpacity, 'and its opacity')
 
 console.log('components: all checks passed')
