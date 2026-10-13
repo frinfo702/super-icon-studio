@@ -1,10 +1,12 @@
-import { hexToRgba } from '../color'
+import { hexToRgba, mixHex } from '../color'
 import { GLYPHS } from '../glyphs'
 import { ArtworkPoints } from './ArtworkPoints'
 import {
   BLUEPRINT,
+  GLASS,
   GLYPH_BASE,
   METAL_BANDS,
+  PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
@@ -34,9 +36,30 @@ function textureLayer(texture: Texture) {
   ].join(', ')
 }
 
+/**
+ * The corner folded back: a quarter-ellipse anchored to the bottom-right corner, filled with
+ * the underside of the card and casting its shadow across the card along the fold.
+ */
+function peelLayer(card: string, short: number) {
+  const side = short * PEEL.size
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute bottom-0 right-0"
+      style={{
+        width: side,
+        height: side,
+        borderTopLeftRadius: '100% 100%',
+        background: `linear-gradient(to bottom right, ${mixHex(card, '#FFFFFF', PEEL.lighten)}, ${mixHex(card, '#000000', PEEL.darken)})`,
+        boxShadow: `-${short * 0.02}px -${short * 0.02}px ${short * 0.07}px rgba(0, 0, 0, 0.3)`,
+      }}
+    />
+  )
+}
+
 /** The guides an app-icon template draws, as an overlay in the glyph colour. */
 function guideLayer(background: Background, glyph: string) {
-  if (background === 'Plain') return null
+  if (background !== 'Grid' && background !== 'Blueprint') return null
   const { inset, radius, grid, circles, stroke, opacity } = BLUEPRINT
   const edge = 100 - inset
 
@@ -68,7 +91,30 @@ function guideLayer(background: Background, glyph: string) {
   )
 }
 
-function gradientLayer(g: Gradient) {  const alpha = Math.min(1, g.strength / 100) * 0.35
+/** The stops of a CSS gradient, straight from the shared [offset, colour, alpha] table. */
+const stops = (table: [string, string, number][]) =>
+  table.map(([offset, colour, alpha]) => `${hexToRgba(colour, alpha)} ${offset}`).join(', ')
+
+/**
+ * The glass surface: a wash across the card and a light along its top edge running into a
+ * shadow along its bottom one, drawn over whatever the card already carries.
+ */
+function glassLayer() {
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute inset-0"
+      style={{
+        borderRadius: 'inherit',
+        backgroundImage: `linear-gradient(to bottom right, ${stops(GLASS.wash)}), linear-gradient(to bottom, ${stops(GLASS.edge)})`,
+      }}
+    />
+  )
+}
+
+function gradientLayer(g: Gradient) {
+  const alpha = Math.min(1, g.strength / 100) * 0.35
+
   const stop = `rgba(255,255,255,${alpha})`
   const x = 50 + g.offsetX
   const y = 50 + g.offsetY
@@ -82,13 +128,24 @@ function gradientLayer(g: Gradient) {  const alpha = Math.min(1, g.strength / 10
   return `conic-gradient(from ${g.offsetX * 3.6}deg at ${x}% ${y}%, ${stop} 0%, rgba(255,255,255,0) ${fade}%)`
 }
 
-export function Glyph({ icon, size, color }: { icon: IconDef; size: number; color: string }) {
+export function Glyph({
+  icon,
+  size,
+  color,
+  filter,
+}: {
+  icon: IconDef
+  size: number
+  color: string
+  filter?: string
+}) {
   if (icon.artwork) {
     return (
       <svg
         width={size}
         height={size}
         viewBox={icon.artwork.viewBox}
+        style={filter ? { filter } : undefined}
         color={color}
         fill="none"
         stroke="currentColor"
@@ -109,7 +166,7 @@ export function Glyph({ icon, size, color }: { icon: IconDef; size: number; colo
     )
   }
   const Lucide = GLYPHS[icon.glyph]
-  return <Lucide size={size} color={color} strokeWidth={1.8} />
+  return <Lucide size={size} color={color} strokeWidth={1.8} style={filter ? { filter } : undefined} />
 }
 
 type Props = {
@@ -149,7 +206,13 @@ export function IconCard({
     x: (glyphShift?.x ?? 0) + (short * offset.x) / 100,
     y: (glyphShift?.y ?? 0) + (short * offset.y) / 100,
   }
+  const peel = icon.metrics.peel ? peelLayer(a.card, short) : null
   const guides = guideLayer(a.background, a.glyph)
+  const glass = a.background === 'Liquid glass' ? glassLayer() : null
+  // Glass lets the card show through the glyph and gives it a rim light and a float shadow.
+  const glyphFilter = a.glyphGlass
+    ? `opacity(${GLASS.glyphOpacity}) drop-shadow(0 ${GLASS.glyphRim.dy * (short / 72)}px ${GLASS.glyphRim.blur * (short / 72)}px ${hexToRgba('#FFFFFF', GLASS.glyphRim.opacity)}) drop-shadow(0 ${GLASS.glyphShadow.dy * (short / 72)}px ${GLASS.glyphShadow.blur * (short / 72)}px ${hexToRgba('#000000', GLASS.glyphShadow.opacity)})`
+    : undefined
   const texture = textureLayer(a.texture)
 
   return (
@@ -175,6 +238,7 @@ export function IconCard({
       }}
     >
       {guides}
+      {glass}
       {texture ? (
         <span
           aria-hidden
@@ -191,7 +255,7 @@ export function IconCard({
         className="relative grid place-items-center"
         style={{ width: glyphSize, height: glyphSize, transform: `translate(${shift.x}px, ${shift.y}px)` }}
       >
-        <Glyph icon={icon} size={glyphSize} color={a.glyph} />
+        <Glyph icon={icon} size={glyphSize} color={a.glyph} filter={glyphFilter} />
         {editing && icon.artwork && onEditPoint && onEditMetrics ? (
           <ArtworkPoints
             artwork={icon.artwork}
@@ -204,6 +268,7 @@ export function IconCard({
           />
         ) : null}
       </span>
+      {peel}
     </div>
   )
 }

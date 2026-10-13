@@ -12,3 +12,15 @@ export function normalizeHex(input: string): string | null {
   if (/^[0-9a-fA-F]{6}$/.test(value)) return `#${value.toUpperCase()}`
   return null
 }
+
+/** The colour `amount` of the way from `hex` towards `target`, both `#rrggbb`, as `#rrggbb`. */
+export function mixHex(hex: string, target: string, amount: number) {
+  const rgb = (value: string) => {
+    const n = Number.parseInt(value.replace('#', ''), 16)
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
+  }
+  const [r, g, b] = rgb(hex)
+  const [tr, tg, tb] = rgb(target)
+  const mix = (from: number, to: number) => Math.round(from + (to - from) * amount)
+  return `#${[mix(r, tr), mix(g, tg), mix(b, tb)].map((c) => c.toString(16).padStart(2, '0')).join('').toUpperCase()}`
+}

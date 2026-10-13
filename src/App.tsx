@@ -1,4 +1,5 @@
 import {
+  AppWindow,
   Download,
   Grid2x2,
   LayoutGrid,
@@ -15,7 +16,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Segmented, ToolButton } from './components/rows'
 import { ICONS, blankIcon } from './data/icons'
-import { buildIconSvg, downloadSvg } from './exportSvg'
+import { ICON_COMPOSER, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
 import {
   DEFAULT_METRICS,
@@ -165,10 +166,13 @@ export default function App() {
     input.click()
   }
 
-  const exportSvg = () => {
+  const exportSvg = (forIconComposer = false) => {
     if (!selected) return
-    const markup = buildIconSvg(selected, mode, size)
-    if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}.svg`, markup)
+    const markup = forIconComposer
+      ? buildIconSvg(selected, mode, ICON_COMPOSER.card, ICON_COMPOSER)
+      : buildIconSvg(selected, mode, size)
+    const suffix = forIconComposer ? `-${ICON_COMPOSER.size}` : ''
+    if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}${suffix}.svg`, markup)
   }
 
   const save = async () => {
@@ -342,12 +346,20 @@ export default function App() {
                     )
                   ) : null}
                   {studio ? (
-                    <ToolButton
-                      title={`Export ${selected?.identifier ?? 'icon'} (${mode} mode) as SVG`}
-                      onClick={exportSvg}
-                    >
-                      <Download size={15} />
-                    </ToolButton>
+                    <>
+                      <ToolButton
+                        title={`Export ${selected?.identifier ?? 'icon'} (${mode} mode) as SVG`}
+                        onClick={() => exportSvg()}
+                      >
+                        <Download size={15} />
+                      </ToolButton>
+                      <ToolButton
+                        title={`Export ${selected?.identifier ?? 'icon'} for Icon Composer (${ICON_COMPOSER.size} × ${ICON_COMPOSER.size})`}
+                        onClick={() => exportSvg(true)}
+                      >
+                        <AppWindow size={15} />
+                      </ToolButton>
+                    </>
                   ) : null}
                   <ToolButton
                     title="Toggle inspector"

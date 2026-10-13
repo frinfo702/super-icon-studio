@@ -29,6 +29,7 @@ export type Appearance = {
   card: string
   glyph: string
   background: Background
+  glyphGlass: boolean
   texture: Texture
   gradient: Gradient
   highlight: Highlight
@@ -40,6 +41,8 @@ export type Metrics = {
   shape: Shape
   /** Where the glyph sits in the card, as a percentage of the card's short side. */
   glyphOffset: { x: number; y: number }
+  /** A corner folded back, showing the underside of the card. */
+  peel: boolean
 }
 
 export const TEXTURES = ['None', 'Liquid metal'] as const
@@ -49,8 +52,30 @@ export type Texture = (typeof TEXTURES)[number]
  * What sits under the card's colour and finish: nothing, a plain grid, or the grid and
  * circles an app-icon template draws over the artwork.
  */
-export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint'] as const
+export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint', 'Liquid glass'] as const
 export type Background = (typeof BACKGROUNDS)[number]
+
+/**
+ * The glass surface: the wash over the card, the light along its top edge, the shadow along
+ * its bottom edge, and how far a glass glyph moves towards white with its rim light and its
+ * float shadow. Each renderer turns these into its own gradients and filters.
+ */
+export const GLASS = {
+  wash: [
+    ['0%', '#FFFFFF', 0.34],
+    ['45%', '#FFFFFF', 0.05],
+    ['100%', '#FFFFFF', 0.2],
+  ] as [string, string, number][],
+  edge: [
+    ['0%', '#FFFFFF', 0.55],
+    ['7%', '#FFFFFF', 0],
+    ['93%', '#000000', 0],
+    ['100%', '#000000', 0.22],
+  ] as [string, string, number][],
+  glyphOpacity: 0.92,
+  glyphRim: { dy: -0.4, blur: 0.2, opacity: 0.55 },
+  glyphShadow: { dy: 0.6, blur: 0.8, opacity: 0.35 },
+}
 
 /**
  * The blueprint drawing, in a 100 × 100 square. The preview and the exporter both scale that
@@ -65,6 +90,12 @@ export const BLUEPRINT = {
   stroke: 0.55,
   opacity: 0.35,
 }
+
+/**
+ * The folded corner: how much of the card's short side the flap takes, and how far its
+ * underside runs from the light it catches at the fold to the shadow at the corner.
+ */
+export const PEEL = { size: 0.34, lighten: 0.3, darken: 0.35 }
 
 /**
  * The chrome banding of the liquid metal finish, as offset / colour / alpha. The renderer
@@ -173,6 +204,7 @@ export const DEFAULT_METRICS: Metrics = {
   cornerRadius: 30,
   shape: 'Square',
   glyphOffset: { x: 0, y: 0 },
+  peel: false,
 }
 
 /** How much of the card the glyph covers before the glyph scale is applied. */
@@ -183,6 +215,7 @@ export function appearance(card: string, glyph = '#FFFFFF'): Appearance {
     card,
     glyph,
     background: 'Plain',
+    glyphGlass: false,
     texture: 'None',
     gradient: { ...DEFAULT_GRADIENT },
     highlight: { ...DEFAULT_HIGHLIGHT },

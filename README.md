@@ -58,11 +58,14 @@ The left sidebar holds two sections.
 **Library** — the catalogue as a grid. Selecting an icon fills the inspector: rename it,
 change its identifier, import an SVG of your own, set the card and glyph colours for the
 current appearance. The `+` button adds an icon, the trash deletes one, the download button
-in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue as
+in the toolbar writes the selected icon out as an SVG, and the app-icon button writes it on a
+512 × 512 canvas — the artwork at the ~80% coverage a macOS icon uses, which is what Apple's
+Icon Composer wants to open. Edits mark the catalogue as
 `Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
-inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius),
+inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius,
+peeled corner),
 **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
 blend mode, blur), and **Card** (base colour, background, texture). Gradient, Highlight,
 Card and texture are stored per appearance, so light and dark are tuned separately; the
@@ -70,7 +73,16 @@ sun/moon switch in the toolbar swaps between them for the whole window.
 
 **Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
 construction circles an app-icon template shows — in the glyph's colour, so the drawing
-reads on any card. It exports with the icon.
+reads on any card — or Liquid glass, a wash over the card with a light along its top edge and
+a shadow along its bottom one. Whichever you pick exports with the icon.
+
+**Glass glyph**, next to the texture, gives the glyph the other half of that material: the
+card shows through it, with a rim light along its top and a shadow under it, so it sits in
+the surface rather than on it.
+
+**Peeled corner** folds the bottom-right corner back and shows the card's underside, with the
+fold's shadow across the card. Like the shape and the corner radius it is set once, not per
+appearance, and it exports with the icon.
 
 **Editing an imported drawing** — an icon that carries an `.svg` gets a points button in the
 toolbar. It lays the drawing's anchors over the card: dragging one bends the shape, dragging
