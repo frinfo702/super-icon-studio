@@ -1,0 +1,125 @@
+import { ICONS } from './data/icons'
+import {
+  DEFAULT_GRADIENT,
+  DEFAULT_HIGHLIGHT,
+  DEFAULT_METRICS,
+  appearance,
+  darkAppearance,
+  type Appearance,
+  type Artwork,
+  type IconDef,
+} from './model'
+import { parseArtwork, serializeSvg } from './svg'
+
+/** What one icon looks like on disk: everything but the artwork, which lives in a file. */
+export type IconRecord = Omit<IconDef, 'artwork'> & { artworkFile?: string }
+
+export type StoredCatalogue = { version: number; icons: IconRecord[]; group: unknown }
+
+export type LibraryPayload = { catalogue: StoredCatalogue | null; files: Record<string, string> }
+
+export async function readLibrary(): Promise<LibraryPayload | null> {
+  try {
+    const response = await fetch('/api/library')
+    if (!response.ok) return null
+    return (await response.json()) as LibraryPayload
+  } catch {
+    // No dev server (a static build, say): the app runs from the bundled catalogue instead.
+    return null
+  }
+}
+
+/** Rebuilds the icons from what the folder holds. Files win over the stored catalogue, and
+ *  an .svg nobody claims becomes a new icon. */
+export function hydrate(payload: LibraryPayload): IconDef[] {
+  const records: IconRecord[] = payload.catalogue?.icons?.length ? payload.catalogue.icons : ICONS
+  const claimed = new Set<string>()
+
+  const icons = records.map((record) => {
+    const { artworkFile, ...rest } = record
+    const normalised = {
+      ...rest,
+      metrics: { ...DEFAULT_METRICS, ...rest.metrics },
+      light: normaliseAppearance(rest.light),
+      dark: normaliseAppearance(rest.dark),
+    } as IconDef
+    const source = artworkFile ? payload.files[artworkFile] : undefined
+    if (!source) return normalised
+    claimed.add(artworkFile as string)
+    // Already trimmed on the way in, so it is only read back here.
+    const artwork = parseArtwork(source, artworkFile as string, { trim: false })
+    return { ...normalised, artwork: artwork ?? undefined }
+  })
+
+  for (const [file, source] of Object.entries(payload.files)) {
+    if (claimed.has(file)) continue
+    const artwork = parseArtwork(source, file, { trim: true })
+    if (!artwork) continue
+    icons.push(iconFromFile(file, artwork))
+  }
+
+  return icons
+}
+
+/** Fills in fields a catalogue written by an older build would not have. */
+function normaliseAppearance(value: Appearance | undefined): Appearance {
+  return {
+    ...appearance('#000000'),
+    ...value,
+    texture: value?.texture ?? 'None',
+    gradient: { ...DEFAULT_GRADIENT, ...value?.gradient },
+    highlight: { ...DEFAULT_HIGHLIGHT, ...value?.highlight },
+  }
+}
+
+function iconFromFile(file: string, artwork: Artwork): IconDef {
+  const base = file.replace(/\.svg$/i, '')
+  const name = base
+    .replace(/[-_]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+
+  return {
+    id: `icon-file-${base}`,
+    name: name || base,
+    identifier: base.replace(/[^a-zA-Z0-9]+(.)?/g, (_, next: string) => next?.toUpperCase() ?? ''),
+    glyph: 'box',
+    artwork,
+    metrics: { ...DEFAULT_METRICS },
+    light: appearance('#0061FF'),
+    dark: darkAppearance('#0061FF'),
+  }
+}
+
+/** A file name nobody else in the catalogue is using. */
+export function artworkFileFor(identifier: string, taken: Set<string>) {
+  const base = (identifier.trim() || 'icon').replace(/[^a-zA-Z0-9._-]/g, '-') || 'icon'
+  let file = `${base}.svg`
+  let index = 2
+  while (taken.has(file)) {
+    file = `${base}-${index}.svg`
+    index += 1
+  }
+  return file
+}
+
+export async function writeLibrary(icons: IconDef[], group: unknown): Promise<boolean> {
+  const files: Record<string, string> = {}
+  const records: IconRecord[] = icons.map((icon) => {
+    const { artwork, ...rest } = icon
+    if (artwork) files[artwork.file] = serializeSvg(artwork)
+    return { ...rest, artworkFile: artwork?.file }
+  })
+
+  try {
+    const response = await fetch('/api/library', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ icons: records, group, files }),
+    })
+    return response.ok
+  } catch {
+    return false
+  }
+}
