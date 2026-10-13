@@ -1,11 +1,15 @@
+import { mixHex } from './color'
 import {
   BLUEPRINT,
   GLASS,
+  LABEL,
   METAL_BANDS,
+  PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
   type Appearance,
+  type Label,
   type Gradient,
   type IconDef,
   type Mode,
@@ -147,6 +151,58 @@ function glassMarkup(box: { width: number; height: number }, ring: number, radiu
 export const ICON_COMPOSER = { size: 512, card: 384, coverage: 824 / 1024 }
 
 /**
+ * The folded corner in the exporter's own coordinates: the fold is an arc centred on the
+ * corner, the flap under it takes the card's underside colours, and a blurred copy of the
+ * shape throws the fold's shadow across the card.
+ */
+function peelMarkup(card: string, box: { width: number; height: number }, ring: number, radius: number, short: number) {
+  const side = short * PEEL.size
+  const x = ring + box.width
+  const y = ring + box.height
+  const ax = svgNumber(x)
+  const ay = svgNumber(y)
+  const fold = `M ${ax} ${svgNumber(y - side)} A ${svgNumber(side)} ${svgNumber(side)} 0 0 0 ${svgNumber(x - side)} ${ay} L ${ax} ${ay} Z`
+  const light = mixHex(card, '#FFFFFF', PEEL.lighten)
+  const dark = mixHex(card, '#000000', PEEL.darken)
+  const blur = short * 0.07
+
+  const defs = [
+    `<clipPath id="peelClip"><rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}"/></clipPath>`,
+    `<linearGradient id="peelFill" gradientUnits="userSpaceOnUse" x1="${svgNumber(x - side)}" y1="${svgNumber(y - side)}" x2="${ax}" y2="${ay}"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient>`,
+    `<filter id="peelShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="${svgNumber(-short * 0.02)}" dy="${svgNumber(-short * 0.02)}" stdDeviation="${svgNumber(blur)}" flood-color="#000000" flood-opacity="0.3"/></filter>`,
+  ].join('')
+
+  return {
+    defs,
+    layers: `<g clip-path="url(#peelClip)"><path d="${fold}" fill="${light}" filter="url(#peelShadow)"/><path d="${fold}" fill="url(#peelFill)"/></g>`,
+  }
+}
+
+/**
+ * The label badge, measured with the canvas the preview would use, so the pill fits the text
+ * the same way on screen and in the file.
+ */
+function labelMarkup(label: Label, box: { width: number; height: number }, ring: number, short: number) {
+  const text = label.text.trim()
+  if (!text) return ''
+
+  const fontSize = short * LABEL.size
+  const font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif`
+  const context = document.createElement('canvas').getContext('2d')
+  context!.font = font
+  const width = Math.min(box.width * 0.92, context!.measureText(text).width + fontSize * 2 * (LABEL.padding + 0.15))
+  const height = fontSize * (1 + LABEL.padding)
+  const x = ring + box.width / 2 - width / 2
+  const y = ring + box.height - short * LABEL.bottom - height
+  const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+  return [
+    `<rect x="${svgNumber(x)}" y="${svgNumber(y)}" width="${svgNumber(width)}" height="${svgNumber(height)}" rx="${svgNumber(height / 2)}" fill="${label.fill}"/>`,
+    `<text x="${svgNumber(ring + box.width / 2)}" y="${svgNumber(y + height / 2)}" fill="${label.color}" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif" font-size="${svgNumber(fontSize)}" font-weight="600" text-anchor="middle" dominant-baseline="central" letter-spacing="${svgNumber(fontSize * 0.04)}">${escaped}</text>`,
+  ].join('')
+}
+
+/**
  * Writes the finished icon — highlight ring, card, finish and glyph — as a standalone SVG.
  * The glyph is cloned out of the live DOM, so custom imports and bundled glyphs both export
  * the same geometry that is on screen. The drop shadow and the inset vignette are drawn here
@@ -158,6 +214,8 @@ export function buildIconSvg(
   size: number,
   /** Sizes the canvas around the drawing, at `coverage` of it, instead of the drawing itself. */
   canvas?: { size: number; coverage: number },
+  /** `all` draws the icon; `card` and `glyph` draw one side of it, on the same canvas. */
+  layer: 'all' | 'card' | 'glyph' = 'all',
 ): string | null {
   // The template guides are an overlay in the same card, so the glyph is the other svg.
   const source = document.querySelector(`[data-icon="${icon.id}"] svg:not([data-guide])`)
@@ -178,8 +236,9 @@ export function buildIconSvg(
   glyph.removeAttribute('style')
   glyph.setAttribute('width', String(glyphSize))
   glyph.setAttribute('height', String(glyphSize))
-  glyph.setAttribute('x', String((totalWidth - glyphSize) / 2))
-  glyph.setAttribute('y', String((totalHeight - glyphSize) / 2))
+  const offset = icon.metrics.glyphOffset
+  glyph.setAttribute('x', String((totalWidth - glyphSize) / 2 + (short * offset.x) / 100))
+  glyph.setAttribute('y', String((totalHeight - glyphSize) / 2 + (short * offset.y) / 100))
   const unit = short / 72
   glyph.setAttribute('color', a.glyph)
   for (const path of glyph.querySelectorAll('path')) {
@@ -203,19 +262,14 @@ export function buildIconSvg(
   const card = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${a.card}"/>`
   const finish = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="url(#finish)"/>`
   const texture = textureMarkup(a.texture, box, ring, radius, short)
+  const peel = icon.metrics.peel ? peelMarkup(a.card, box, ring, radius, short) : null
   const guides = guideMarkup(a, box, ring, radius)
   const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
+  const label = labelMarkup(a.label, box, ring, short)
 
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
-    `<title>${icon.name}</title>`,
-    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
-    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
-    texture.defs,
-    guides.defs,
-    glass?.defs ?? '',
-    glyphGlass,
-    `</defs>`,
+  // The two sides of the icon: what the card carries, and what sits over it. A layer export
+  // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
+  const surface = [
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
     card,
@@ -223,9 +277,35 @@ export function buildIconSvg(
     texture.layers,
     guides.layers,
     glass?.layers ?? '',
-    glyph.outerHTML,
+    peel?.layers ?? '',
+  ]
+  const over = [glyph.outerHTML, label].filter(Boolean)
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
+    `<title>${icon.name}${layer === 'all' ? '' : ` (${layer})`}</title>`,
+    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
+    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
+    texture.defs,
+    guides.defs,
+    glass?.defs ?? '',
+    peel?.defs ?? '',
+    glyphGlass,
+    `</defs>`,
+    ...(layer === 'glyph' ? [] : surface),
+    ...(layer === 'card' ? [] : over),
     `</svg>`,
   ].join('')
+}
+
+/**
+ * The two files an app icon is layered from: the card, and what sits over it, on the canvas
+ * and at the coverage a macOS icon uses, so a tool can stack them into one icon.
+ */
+export function buildIconLayers(icon: IconDef, mode: Mode) {
+  const build = (layer: 'card' | 'glyph') =>
+    buildIconSvg(icon, mode, ICON_COMPOSER.card, ICON_COMPOSER, layer)
+  return { card: build('card'), glyph: build('glyph') }
 }
 
 export function downloadSvg(filename: string, markup: string) {

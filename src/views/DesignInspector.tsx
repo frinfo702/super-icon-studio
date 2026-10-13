@@ -5,6 +5,7 @@ import { IconCard } from '../components/IconCard'
 import {
   BACKGROUNDS,
   BLEND_MODES,
+  DEFAULT_LABEL,
   DEFAULT_METRICS,
   GRADIENT_STYLES,
   SHAPES,
@@ -17,7 +18,16 @@ import {
   type IconDef,
   type Mode,
 } from '../model'
-import { ColorRow, Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
+import {
+  ColorRow,
+  Group,
+  Section,
+  Segmented,
+  SelectRow,
+  SliderRow,
+  TextRow,
+  ToggleRow,
+} from '../components/rows'
 
 export type DesignTab = 'size' | 'gradient' | 'highlight' | 'card'
 
@@ -153,6 +163,12 @@ export function DesignInspector({
                   onChange={(cornerRadius) => onPatch({ metrics: { ...icon.metrics, cornerRadius } })}
                 />
               )}
+              <ToggleRow
+                label="Peeled corner"
+                checked={icon.metrics.peel}
+                def={false}
+                onChange={(peel) => onPatch({ metrics: { ...icon.metrics, peel } })}
+              />
             </>
           ) : null}
 
@@ -274,6 +290,26 @@ export function DesignInspector({
                 checked={a.glyphGlass}
                 def={false}
                 onChange={(glyphGlass) => onPatchAppearance({ glyphGlass })}
+              />
+
+              <Section title="Label" />
+              <TextRow
+                label="Text"
+                value={a.label.text}
+                placeholder="BETA"
+                onChange={(text) => onPatchAppearance({ label: { ...a.label, text } })}
+              />
+              <ColorRow
+                label="Text color"
+                value={a.label.color}
+                def={DEFAULT_LABEL.color}
+                onChange={(color) => onPatchAppearance({ label: { ...a.label, color } })}
+              />
+              <ColorRow
+                label="Pill"
+                value={a.label.fill}
+                def={DEFAULT_LABEL.fill}
+                onChange={(fill) => onPatchAppearance({ label: { ...a.label, fill } })}
               />
             </>
           ) : null}

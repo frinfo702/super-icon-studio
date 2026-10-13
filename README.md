@@ -56,17 +56,18 @@ starts from.
 The left sidebar holds two sections.
 
 **Library** — the catalogue as a grid. Selecting an icon fills the inspector: rename it,
-change its identifier and import an SVG of your own. The `+` button adds an icon, the trash
-deletes one, the download button in the toolbar writes the selected icon out as an SVG, and
-the app-icon button writes it on a 512 × 512 canvas — the artwork at the ~80% coverage a
-macOS icon uses, which is what Apple's Icon Composer wants to open. Edits mark the catalogue
-as `Unsaved`; Revert restores the last saved state and Save commits it.
+change its identifier and import an SVG of your own. The `+` button adds an icon and the
+trash deletes one. The toolbar's export buttons write the selected icon out: as an SVG, on a
+512 × 512 canvas for Icon Composer — the artwork at the ~80% coverage a macOS icon uses — or
+as the two layers it is built from, the card and the glyph over it, both at the size on
+screen, so a tool that stacks layers rebuilds the same icon. Edits mark the catalogue as
+`Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
-inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius),
-**Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
-blend mode, blur), and **Card** (card and glyph colours, background, texture). Gradient,
-Highlight, Card and texture are stored per appearance, so light and dark are tuned
+inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius, peeled
+corner), **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour,
+opacity, blend mode, blur), and **Card** (card and glyph colours, background, texture).
+Gradient, Highlight, Card and texture are stored per appearance, so light and dark are tuned
 separately; the sun/moon switch in the toolbar swaps between them for the whole window.
 
 **Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
@@ -77,6 +78,21 @@ a shadow along its bottom one. Whichever you pick exports with the icon.
 **Glass glyph**, next to the texture, gives the glyph the other half of that material: the
 card shows through it, with a rim light along its top and a shadow under it, so it sits in
 the surface rather than on it.
+
+**Peeled corner** folds the bottom-right corner back and shows the card's underside, with the
+fold's shadow across the card. Like the shape and the corner radius it is set once, not per
+appearance, and it exports with the icon.
+
+**Editing an imported drawing** — an icon that carries an `.svg` gets a points button in the
+toolbar. It lays the drawing's anchors over the card: dragging one bends the shape, dragging
+the drawing itself moves it in the card, and the corner handles size it. A shape edit is
+written into the path, so it saves and exports with the icon; the move and the size are
+metrics, stored with the rest of the icon's settings.
+
+**Label**, under the card, stamps a line of text over the icon in a pill — the badge a build
+reads. Text colour and pill colour are per appearance, and the pill's size follows the card,
+so the same label reads at 16 points and at 512. It exports as a real element: a tool that
+opens the SVG needs a font from the stack, so outline the text there if it has to travel.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and

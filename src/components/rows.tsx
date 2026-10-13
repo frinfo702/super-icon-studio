@@ -204,10 +204,12 @@ export function ColorRow({
 export function TextRow({
   label,
   value,
+  placeholder,
   onChange,
 }: {
   label: string
   value: string
+  placeholder?: string
   onChange: (v: string) => void
 }) {
   return (
@@ -216,6 +218,7 @@ export function TextRow({
       <input
         value={value}
         spellCheck={false}
+        placeholder={placeholder}
         onChange={(e) => onChange(e.target.value)}
         style={{ width: `${Math.max(4, value.length) + 2}ch` }}
         className="shrink-0 rounded-md bg-black/[0.06] px-2 py-[3px] text-center text-[12px] text-neutral-800 outline-none focus:bg-white focus:ring-2 focus:ring-[var(--accent)] dark:bg-white/[0.12] dark:text-neutral-200 dark:focus:bg-white/20"

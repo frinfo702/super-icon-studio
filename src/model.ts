@@ -28,6 +28,7 @@ export type Highlight = {
 export type Appearance = {
   card: string
   glyph: string
+  label: Label
   background: Background
   glyphGlass: boolean
   texture: Texture
@@ -39,6 +40,10 @@ export type Metrics = {
   glyphScale: number
   cornerRadius: number
   shape: Shape
+  /** Where the glyph sits in the card, as a percentage of the card's short side. */
+  glyphOffset: { x: number; y: number }
+  /** A corner folded back, showing the underside of the card. */
+  peel: boolean
 }
 
 export const TEXTURES = ['None', 'Liquid metal'] as const
@@ -50,6 +55,18 @@ export type Texture = (typeof TEXTURES)[number]
  */
 export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint', 'Liquid glass'] as const
 export type Background = (typeof BACKGROUNDS)[number]
+
+/**
+/**
+ * The label badge: how tall its letters are against the card's short side, how much room they
+ * get inside the pill, and how far the pill sits from the bottom edge.
+ */
+export const LABEL = { size: 0.15, padding: 0.45, bottom: 0.09 }
+
+/** A line of text over the card, in a pill, the way a build badge reads. */
+export type Label = { text: string; color: string; fill: string }
+
+export const DEFAULT_LABEL: Label = { text: '', color: '#FFFFFF', fill: '#1C1C1E' }
 
 /**
  * The glass surface: the wash over the card, the light along its top edge, the shadow along
@@ -86,6 +103,12 @@ export const BLUEPRINT = {
   stroke: 0.55,
   opacity: 0.35,
 }
+
+/**
+ * The folded corner: how much of the card's short side the flap takes, and how far its
+ * underside runs from the light it catches at the fold to the shadow at the corner.
+ */
+export const PEEL = { size: 0.34, lighten: 0.3, darken: 0.35 }
 
 /**
  * The chrome banding of the liquid metal finish, as offset / colour / alpha. The renderer
@@ -189,7 +212,13 @@ export const DEFAULT_HIGHLIGHT: Highlight = {
   blur: 0,
 }
 
-export const DEFAULT_METRICS: Metrics = { glyphScale: 125, cornerRadius: 30, shape: 'Square' }
+export const DEFAULT_METRICS: Metrics = {
+  glyphScale: 125,
+  cornerRadius: 30,
+  shape: 'Square',
+  glyphOffset: { x: 0, y: 0 },
+  peel: false,
+}
 
 /** How much of the card the glyph covers before the glyph scale is applied. */
 export const GLYPH_BASE = 0.44
@@ -198,6 +227,7 @@ export function appearance(card: string, glyph = '#FFFFFF'): Appearance {
   return {
     card,
     glyph,
+    label: { ...DEFAULT_LABEL },
     background: 'Plain',
     glyphGlass: false,
     texture: 'None',
