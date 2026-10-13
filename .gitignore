@@ -16,9 +16,6 @@ dist-ssr
 .build
 .swiftpm
 
-# Imported icon artwork stays local; catalogue.json keeps the design values
-icons/*.svg
-
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

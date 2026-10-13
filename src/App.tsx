@@ -359,20 +359,20 @@ export default function App() {
                 </div>
               </header>
 
-              <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
-                <div className="pointer-events-auto flex w-[240px] items-center gap-2 rounded-full bg-white/70 px-3 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.06] backdrop-blur-xl dark:bg-white/[0.12] dark:ring-white/10">
-                  <input
-                    type="range"
-                    className="slider w-full"
-                    min={zoomRange.min}
-                    max={zoomRange.max}
-                    step={zoomRange.step}
-                    value={zoomValue}
-                    style={{ '--fill': `${zoomFill}%` } as React.CSSProperties}
-                    onChange={(event) => setZoomValue(Number(event.target.value))}
-                  />
-                </div>
-                {studio ? (
+              {studio ? (
+                <div className="pointer-events-none absolute inset-x-0 bottom-3 flex justify-center gap-1.5">
+                  <div className="pointer-events-auto flex w-[240px] items-center gap-2 rounded-full bg-white/70 px-3 py-2 shadow-[0_2px_10px_rgba(0,0,0,0.12)] ring-1 ring-black/[0.06] backdrop-blur-xl dark:bg-white/[0.12] dark:ring-white/10">
+                    <input
+                      type="range"
+                      className="slider w-full"
+                      min={zoomRange.min}
+                      max={zoomRange.max}
+                      step={zoomRange.step}
+                      value={zoomValue}
+                      style={{ '--fill': `${zoomFill}%` } as React.CSSProperties}
+                      onChange={(event) => setZoomValue(Number(event.target.value))}
+                    />
+                  </div>
                   <button
                     type="button"
                     title="Fit"
@@ -382,8 +382,8 @@ export default function App() {
                   >
                     <Scaling size={14} />
                   </button>
-                ) : null}
-              </div>
+                </div>
+              ) : null}
             </main>
 
             {showInspector ? (

@@ -28,6 +28,7 @@ export type Highlight = {
 export type Appearance = {
   card: string
   glyph: string
+  background: Background
   texture: Texture
   gradient: Gradient
   highlight: Highlight
@@ -43,6 +44,27 @@ export type Metrics = {
 
 export const TEXTURES = ['None', 'Liquid metal'] as const
 export type Texture = (typeof TEXTURES)[number]
+
+/**
+ * What sits under the card's colour and finish: nothing, a plain grid, or the grid and
+ * circles an app-icon template draws over the artwork.
+ */
+export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint'] as const
+export type Background = (typeof BACKGROUNDS)[number]
+
+/**
+ * The blueprint drawing, in a 100 × 100 square. The preview and the exporter both scale that
+ * square to cover the card and centre it, so the circles stay circles; the guides are drawn
+ * in the glyph colour.
+ */
+export const BLUEPRINT = {
+  inset: 8,
+  radius: 20,
+  grid: [8, 22, 36, 50, 64, 78, 92],
+  circles: [21, 42],
+  stroke: 0.55,
+  opacity: 0.35,
+}
 
 /**
  * The chrome banding of the liquid metal finish, as offset / colour / alpha. The renderer
@@ -160,6 +182,7 @@ export function appearance(card: string, glyph = '#FFFFFF'): Appearance {
   return {
     card,
     glyph,
+    background: 'Plain',
     texture: 'None',
     gradient: { ...DEFAULT_GRADIENT },
     highlight: { ...DEFAULT_HIGHLIGHT },

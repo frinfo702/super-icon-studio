@@ -1,8 +1,10 @@
 import {
+  BLUEPRINT,
   METAL_BANDS,
   cardBox,
   cardRadius,
   cardShortSide,
+  type Appearance,
   type Gradient,
   type IconDef,
   type Mode,
@@ -48,6 +50,38 @@ function textureMarkup(texture: Texture, box: { width: number; height: number },
   return { defs, layers }
 }
 
+/**
+ * The template guides the preview draws, in the card's own coordinates: the 100 × 100 square
+ * is scaled to cover the card and centred, then clipped to its outline.
+ */
+function guideMarkup(a: Appearance, box: { width: number; height: number }, ring: number, radius: number) {
+  if (a.background === 'Plain') return { defs: '', layers: '' }
+
+  const { inset, radius: corner, grid, circles, stroke, opacity } = BLUEPRINT
+  const edge = 100 - inset
+  const scale = Math.max(box.width, box.height) / 100
+  const x = ring + box.width / 2 - 50 * scale
+  const y = ring + box.height / 2 - 50 * scale
+  const gridPath = grid
+    .map((v) => `M${svgNumber(v)} ${inset}L${svgNumber(v)} ${edge}M${inset} ${svgNumber(v)}L${edge} ${svgNumber(v)}`)
+    .join('')
+
+  const shapes =
+    a.background === 'Blueprint'
+      ? [
+          `<rect x="${inset}" y="${inset}" width="${edge - inset}" height="${edge - inset}" rx="${corner}"/>`,
+          ...circles.map((r) => `<circle cx="50" cy="50" r="${r}"/>`),
+          `<path d="M${inset} ${inset}L${edge} ${edge}M${edge} ${inset}L${inset} ${edge}"/>`,
+          `<path d="${gridPath}"/>`,
+        ].join('')
+      : `<path d="${gridPath}"/>`
+
+  return {
+    defs: `<clipPath id="guideClip"><rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}"/></clipPath>`,
+    layers: `<g clip-path="url(#guideClip)"><g transform="translate(${svgNumber(x)} ${svgNumber(y)}) scale(${svgNumber(scale)})" fill="none" stroke="${a.glyph}" stroke-width="${stroke}" stroke-opacity="${opacity}">${shapes}</g></g>`,
+  }
+}
+
 function gradientMarkup(g: Gradient, size: number, offset: number) {
   const alpha = Math.min(1, g.strength / 100) * 0.35
   const fade = Math.max(10, Math.min(95, g.sizeY / 6)) / 100
@@ -82,7 +116,8 @@ function gradientMarkup(g: Gradient, size: number, offset: number) {
  * as an SVG filter; the browser preview's gradient blend modes are not carried over.
  */
 export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | null {
-  const source = document.querySelector(`[data-icon="${icon.id}"] svg`)
+  // The template guides are an overlay in the same card, so the glyph is the other svg.
+  const source = document.querySelector(`[data-icon="${icon.id}"] svg:not([data-guide])`)
   if (!source) return null
 
   const a = icon[mode]
@@ -109,6 +144,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
   const card = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${a.card}"/>`
   const finish = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="url(#finish)"/>`
   const texture = textureMarkup(a.texture, box, ring, radius, short)
+  const guides = guideMarkup(a, box, ring, radius)
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
@@ -116,12 +152,14 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
     `<defs>${gradientMarkup(a.gradient, short, ring)}`,
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
     texture.defs,
+    guides.defs,
     `</defs>`,
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
     card,
     finish,
     texture.layers,
+    guides.layers,
     glyph.outerHTML,
     `</svg>`,
   ].join('')
