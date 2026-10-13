@@ -262,33 +262,34 @@ export default function App() {
                 )}
               </div>
 
-              <header className="absolute inset-x-0 top-0 flex h-11 items-center gap-2 bg-white/60 px-3 backdrop-blur-xl dark:bg-[#1c1c1e]/60">
-                {!showSidebar ? (
-                  <ToolButton title="Show sidebar" onClick={() => setShowSidebar(true)}>
-                    <PanelLeft size={15} />
-                  </ToolButton>
-                ) : null}
-                <Segmented
-                  tone="neutral"
-                  value={mode}
-                  onChange={setMode}
-                  options={[
-                    { value: 'light', icon: <Sun size={14} />, title: 'Light appearance' },
-                    { value: 'dark', icon: <Moon size={14} />, title: 'Dark appearance' },
-                  ]}
-                />
-                <div className="absolute left-1/2 -translate-x-1/2">
+              <header className="absolute inset-x-0 top-0 grid h-11 grid-cols-[1fr_auto_1fr] items-center gap-2 overflow-x-auto bg-white/60 px-3 backdrop-blur-xl dark:bg-[#1c1c1e]/60">
+                <div className="flex items-center gap-2">
+                  {!showSidebar ? (
+                    <ToolButton title="Show sidebar" onClick={() => setShowSidebar(true)}>
+                      <PanelLeft size={15} />
+                    </ToolButton>
+                  ) : null}
                   <Segmented
                     tone="neutral"
-                    value={workspace}
-                    onChange={setWorkspace}
+                    value={mode}
+                    onChange={setMode}
                     options={[
-                      { value: 'studio', label: 'Studio' },
-                      { value: 'composer', label: 'Composer' },
+                      { value: 'light', icon: <Sun size={14} />, title: 'Light appearance' },
+                      { value: 'dark', icon: <Moon size={14} />, title: 'Dark appearance' },
                     ]}
                   />
                 </div>
-                <div className="ml-auto flex items-center gap-0.5">
+                {/* Equal side columns keep the switcher centred; the header scrolls when it no longer fits. */}
+                <Segmented
+                  tone="neutral"
+                  value={workspace}
+                  onChange={setWorkspace}
+                  options={[
+                    { value: 'studio', label: 'Studio' },
+                    { value: 'composer', label: 'Composer' },
+                  ]}
+                />
+                <div className="flex items-center justify-end gap-0.5">
                   {studio ? (
                     isLibrary ? (
                       <ToolButton title="Add icon" onClick={addIcon}>
