@@ -1,0 +1,9 @@
+{
+  "name": "super-icon-studio",
+  "compatibility_date": "2026-10-01",
+  // The app is static: the build's dist, served as assets. `icons.json` in that folder is
+  // the icon set the build carried; the deployed app saves edits in the browser.
+  "assets": {
+    "directory": "./dist"
+  }
+}

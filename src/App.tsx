@@ -155,7 +155,7 @@ export default function App() {
     const written = await writeLibrary(icons, group)
     setSaved(icons)
     setSavedGroup(group)
-    if (!written) console.warn('Super Icon Studio: could not write the icons folder')
+    if (!written) console.warn('Super Icon Studio: could not save the icon set')
   }
 
   const revert = () => {

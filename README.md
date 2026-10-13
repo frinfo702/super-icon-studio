@@ -33,8 +33,22 @@ start and writes it back when you press Save.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
 
-`pnpm dev` and `pnpm preview` both serve this. A static build with no middleware behind it
-falls back to the catalogue bundled in `src/data/icons.ts`.
+`pnpm dev` and `pnpm preview` both serve this. A build also writes a snapshot of the folder
+to `icons.json`, so a static build with no middleware behind it still opens with the icon set
+you saved; with no snapshot either, it falls back to the catalogue bundled in
+`src/data/icons.ts`.
+
+## Deploying
+
+```sh
+pnpm build
+wrangler deploy   # wrangler.jsonc serves dist as static assets
+```
+
+With no middleware in front of it, the deployed app keeps the set in the browser's
+`localStorage` instead of the folder: the build's `icons.json` seeds a first visit, and Save
+from then on writes to that browser. Rebuild and redeploy to change what a new visitor
+starts from.
 
 ## Studio
 

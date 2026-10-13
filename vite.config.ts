@@ -82,6 +82,15 @@ function iconLibrary(): Plugin {
 
   return {
     name: 'super-icon-studio:icon-library',
+    // A build has no middleware behind it, so it carries a snapshot of the folder; the app
+    // reads it when `/api/library` is not there, and the saved set survives the build.
+    async generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'icons.json',
+        source: JSON.stringify(await readFolder()),
+      })
+    },
     configureServer(server) {
       serve(server.middlewares)
     },

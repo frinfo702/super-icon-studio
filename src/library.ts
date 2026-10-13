@@ -18,13 +18,33 @@ export type StoredCatalogue = { version: number; icons: IconRecord[]; group: unk
 
 export type LibraryPayload = { catalogue: StoredCatalogue | null; files: Record<string, string> }
 
+/** Where a deployed app keeps the set: the folder is only there when a server serves it. */
+const STORAGE_KEY = 'super-icon-studio:library'
+
+function storedLibrary(): LibraryPayload | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY)
+    return raw ? (JSON.parse(raw) as LibraryPayload) : null
+  } catch {
+    return null
+  }
+}
+
 export async function readLibrary(): Promise<LibraryPayload | null> {
   try {
     const response = await fetch('/api/library')
-    if (!response.ok) return null
-    return (await response.json()) as LibraryPayload
+    if (response.ok) return (await response.json()) as LibraryPayload
   } catch {
-    // No dev server (a static build, say): the app runs from the bundled catalogue instead.
+    // No middleware to ask; the browser is the store instead.
+  }
+  const stored = storedLibrary()
+  if (stored) return stored
+  try {
+    // First visit to a build: it carries the folder as it was at build time.
+    const response = await fetch('/icons.json')
+    return response.ok ? ((await response.json()) as LibraryPayload) : null
+  } catch {
+    // Nothing to read: the app runs from the bundled catalogue instead.
     return null
   }
 }
@@ -118,7 +138,17 @@ export async function writeLibrary(icons: IconDef[], group: unknown): Promise<bo
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ icons: records, group, files }),
     })
-    return response.ok
+    if (response.ok) return true
+  } catch {
+    // No middleware: the browser keeps it.
+  }
+
+  try {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({ catalogue: { version: 1, icons: records, group }, files }),
+    )
+    return true
   } catch {
     return false
   }
