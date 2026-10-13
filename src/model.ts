@@ -37,6 +37,8 @@ export type Metrics = {
   glyphScale: number
   cornerRadius: number
   shape: Shape
+  /** Where the glyph sits in the card, as a percentage of the card's short side. */
+  glyphOffset: { x: number; y: number }
 }
 
 export const TEXTURES = ['None', 'Liquid metal'] as const
@@ -144,7 +146,12 @@ export const DEFAULT_HIGHLIGHT: Highlight = {
   blur: 0,
 }
 
-export const DEFAULT_METRICS: Metrics = { glyphScale: 125, cornerRadius: 30, shape: 'Square' }
+export const DEFAULT_METRICS: Metrics = {
+  glyphScale: 125,
+  cornerRadius: 30,
+  shape: 'Square',
+  glyphOffset: { x: 0, y: 0 },
+}
 
 /** How much of the card the glyph covers before the glyph scale is applied. */
 export const GLYPH_BASE = 0.44

@@ -1,5 +1,6 @@
 import { hexToRgba } from '../color'
 import { GLYPHS } from '../glyphs'
+import { ArtworkPoints } from './ArtworkPoints'
 import {
   GLYPH_BASE,
   METAL_BANDS,
@@ -8,6 +9,7 @@ import {
   cardShortSide,
   type Gradient,
   type IconDef,
+  type Metrics,
   type Mode,
   type Texture,
 } from '../model'
@@ -82,9 +84,22 @@ type Props = {
   className?: string
   /** Moves the glyph inside the card, which is how a deck keeps it in the exposed strip. */
   glyphShift?: { x: number; y: number }
+  /** Draws the point handles for an imported drawing, and reports what they are dragged to. */
+  editing?: boolean
+  onEditPoint?: (pathIndex: number, pointIndex: number, x: number, y: number) => void
+  onEditMetrics?: (patch: Partial<Metrics>) => void
 }
 
-export function IconCard({ icon, mode, size, className = '', glyphShift }: Props) {
+export function IconCard({
+  icon,
+  mode,
+  size,
+  className = '',
+  glyphShift,
+  editing = false,
+  onEditPoint,
+  onEditMetrics,
+}: Props) {
   const a = icon[mode]
   const shape = icon.metrics.shape
   const box = cardBox(shape, size)
@@ -94,6 +109,11 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
   const glyphSize = short * GLYPH_BASE * (icon.metrics.glyphScale / 100)
   const highlight = hexToRgba(a.highlight.color, a.highlight.opacity / 100)
   const blur = a.highlight.blur * (short / 72)
+  const offset = icon.metrics.glyphOffset
+  const shift = {
+    x: (glyphShift?.x ?? 0) + (short * offset.x) / 100,
+    y: (glyphShift?.y ?? 0) + (short * offset.y) / 100,
+  }
   const texture = textureLayer(a.texture)
 
   return (
@@ -131,14 +151,21 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
         />
       ) : null}
       <span
-        className="relative"
-        style={
-          glyphShift && (glyphShift.x !== 0 || glyphShift.y !== 0)
-            ? { transform: `translate(${glyphShift.x}px, ${glyphShift.y}px)` }
-            : undefined
-        }
+        className="relative grid place-items-center"
+        style={{ width: glyphSize, height: glyphSize, transform: `translate(${shift.x}px, ${shift.y}px)` }}
       >
         <Glyph icon={icon} size={glyphSize} color={a.glyph} />
+        {editing && icon.artwork && onEditPoint && onEditMetrics ? (
+          <ArtworkPoints
+            artwork={icon.artwork}
+            box={glyphSize}
+            short={short}
+            card={{ width: box.width, height: box.height, radius }}
+            metrics={icon.metrics}
+            onPoint={onEditPoint}
+            onMetrics={onEditMetrics}
+          />
+        ) : null}
       </span>
     </div>
   )

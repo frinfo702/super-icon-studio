@@ -67,6 +67,12 @@ blend mode, blur), and **Card** (base colour, texture). Gradient, Highlight, Car
 texture are stored per appearance, so light and dark are tuned separately; the sun/moon
 switch in the toolbar swaps between them for the whole window.
 
+**Editing an imported drawing** — an icon that carries an `.svg` gets a points button in the
+toolbar. It lays the drawing's anchors over the card: dragging one bends the shape, dragging
+the drawing itself moves it in the card, and the corner handles size it. A shape edit is
+written into the path, so it saves and exports with the icon; the move and the size are
+metrics, stored with the rest of the icon's settings.
+
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
 Circle rounds fully, which is why the corner radius slider steps aside for it.

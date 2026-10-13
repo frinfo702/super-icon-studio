@@ -9,6 +9,7 @@ import {
   Plus,
   Rows3,
   Scaling,
+  Spline,
   Sun,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
@@ -23,8 +24,10 @@ import {
   zoomFor,
   type Appearance,
   type IconDef,
+  type Metrics,
   type Mode,
 } from './model'
+import { movePathPoint } from './path'
 import { artworkFileFor, hydrate, readLibrary, writeLibrary } from './library'
 import { parseArtwork } from './svg'
 import { ComposerCanvas, ComposerInspector, ComposerSidebar } from './views/Composer'
@@ -57,6 +60,7 @@ export default function App() {
   const [designZoom, setDesignZoom] = useState(5)
   const [groupZoom, setGroupZoom] = useState(1.2)
   const [showSidebar, setShowSidebar] = useState(true)
+  const [editPoints, setEditPoints] = useState(false)
   const [showInspector, setShowInspector] = useState(true)
 
   const dark = mode === 'dark'
@@ -128,6 +132,22 @@ export default function App() {
     const next = icons.filter((icon) => icon.id !== selectedId)
     setIcons(next)
     setSelectedId(next[Math.max(0, index - 1)]?.id ?? '')
+  }
+
+  const editArtworkPoint = (pathIndex: number, pointIndex: number, x: number, y: number) => {
+    if (!selected?.artwork) return
+    const artwork = {
+      ...selected.artwork,
+      paths: selected.artwork.paths.map((path, index) =>
+        index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+      ),
+    }
+    patchIcon({ artwork })
+  }
+
+  const editMetrics = (patch: Partial<Metrics>) => {
+    if (!selected) return
+    patchIcon({ metrics: { ...selected.metrics, ...patch } })
   }
 
   const replaceSvg = () => {
@@ -253,6 +273,9 @@ export default function App() {
                     size={size}
                     zoom={designZoom}
                     layout={designLayout}
+                    editing={editPoints}
+                    onEditPoint={editArtworkPoint}
+                    onEditMetrics={editMetrics}
                     onSizeChange={changeSize}
                   />
                 )}
@@ -292,6 +315,15 @@ export default function App() {
                       </ToolButton>
                     ) : (
                       <>
+                        {selected?.artwork ? (
+                          <ToolButton
+                            title={editPoints ? 'Stop editing the artwork points' : 'Edit the artwork points'}
+                            active={editPoints}
+                            onClick={() => setEditPoints((value) => !value)}
+                          >
+                            <Spline size={15} />
+                          </ToolButton>
+                        ) : null}
                         <ToolButton
                           title="Hero preview"
                           active={designLayout === 'hero'}
