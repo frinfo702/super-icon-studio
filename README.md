@@ -12,7 +12,7 @@ pnpm install
 pnpm dev      # http://localhost:5173
 pnpm build    # type-check + production bundle
 pnpm lint     # oxlint
-pnpm check    # asserts for the SVG importer, the deck layout, the path editor and the components
+pnpm check    # asserts for the SVG importer, the deck layout, the path editor, the components and the undo history
 ```
 
 ## The icon library is a folder
@@ -20,16 +20,19 @@ pnpm check    # asserts for the SVG importer, the deck layout, the path editor a
 The icon set lives in `icons/` at the root: `catalogue.json` holds the design values (name,
 identifier, colours, metrics, finish) and one `.svg` per icon holds its artwork. The Vite
 dev server serves and writes that folder through `/api/library`, so the app reads it on
-start and writes it back when you press Save.
+start and writes every edit back on its own.
 
 - **Start** — every `.svg` in the folder comes back as artwork, and an `.svg` that nothing
   in `catalogue.json` claims becomes a new icon, named after its file.
-- **Save** — writes `catalogue.json`, writes one file per icon that has artwork, and
-  deletes artwork files the catalogue no longer refers to. Files the app never wrote are
-  left alone.
+- **Save** — every settled edit writes itself: `catalogue.json`, one file per icon that has
+  artwork, and the artwork files the catalogue no longer refers to are deleted. Files the app
+  never wrote are left alone. The write waits for the edit to stop, so a drag on a slider
+  lands as one save rather than one per frame.
+- **Undo** — the toolbar's back and forward buttons step through the edits. A step covers a
+  whole gesture, and an edit made after a step back replaces what forward was holding.
 - **Import** — `Import SVG…` in the Library inspector names the file after the icon's
   identifier, trims it, and re-points its colours at the glyph colour. It reaches the folder
-  on the next Save, and Revert drops it.
+  on the next save, and a step back drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
 - The folder is tracked, artwork included, so a build and a deploy carry the same set.
@@ -47,9 +50,9 @@ wrangler deploy   # wrangler.jsonc serves dist as static assets
 ```
 
 With no middleware in front of it, the deployed app keeps the set in the browser's
-`localStorage` instead of the folder: the build's `icons.json` seeds a first visit, and Save
-from then on writes to that browser. Rebuild and redeploy to change what a new visitor
-starts from.
+`localStorage` instead of the folder: the build's `icons.json` seeds a first visit, and every
+edit from then on writes itself into that browser. Rebuild and redeploy to change what a new
+visitor starts from.
 
 ## Studio
 
@@ -60,8 +63,9 @@ change its identifier and import an SVG of your own. The `+` button adds an icon
 trash deletes one. The toolbar's export buttons write the selected icon out: as an SVG, on a
 512 × 512 canvas for Icon Composer — the artwork at the ~80% coverage a macOS icon uses — or
 as the two layers it is built from, the card and the glyph over it, both at the size on
-screen, so a tool that stacks layers rebuilds the same icon. Edits mark the catalogue as
-`Unsaved`; Revert restores the last saved state and Save commits it.
+screen, so a tool that stacks layers rebuilds the same icon. Edits save as they settle, and
+the sidebar shows `Saving` until the folder has them; the toolbar's back and forward buttons
+step through the edits.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
 inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius, peeled

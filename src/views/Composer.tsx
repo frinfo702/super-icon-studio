@@ -1,7 +1,6 @@
 import { ChevronDown, ChevronUp, GripVertical, Plus, RotateCcw, X } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { IconCard } from '../components/IconCard'
-import { Footer } from '../components/Footer'
 import { Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
 import {
   ANIMATION_STYLES,
@@ -333,20 +332,14 @@ function PreviewTab({
 
 export function ComposerInspector({
   group,
-  dirty,
   tab,
   onTab,
   onPatch,
-  onRevert,
-  onSave,
 }: {
   group: IconGroup
-  dirty: boolean
   tab: 'layout' | 'animation'
   onTab: (tab: 'layout' | 'animation') => void
   onPatch: Patch
-  onRevert: () => void
-  onSave: () => void
 }) {
   const vertical = group.layout === 'Vertical'
 
@@ -501,8 +494,6 @@ export function ComposerInspector({
           </>
         )}
       </div>
-
-      <Footer dirty={dirty} onRevert={onRevert} onSave={onSave} />
     </>
   )
 }

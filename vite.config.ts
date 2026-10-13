@@ -6,8 +6,8 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 /**
- * Keeps the icon set on disk. The app fetches the folder on start, and Save writes it back:
- * `catalogue.json` holds the design values, one `.svg` per icon holds its artwork. The
+ * Keeps the icon set on disk. The app fetches the folder on start, and every edit writes it
+ * back: `catalogue.json` holds the design values, one `.svg` per icon holds its artwork. The
  * folder is the source of truth for artwork, so a file dropped in by hand shows up in the
  * catalogue on the next load.
  */
@@ -82,6 +82,11 @@ function iconLibrary(): Plugin {
 
   return {
     name: 'super-icon-studio:icon-library',
+    config: () => ({
+      // The studio is the one that writes the folder; a watcher here would reload the page on
+      // every write and take the undo history with it.
+      server: { watch: { ignored: [`${folder}/**`] } },
+    }),
     // A build has no middleware behind it, so it carries a snapshot of the folder; the app
     // reads it when `/api/library` is not there, and the saved set survives the build.
     async generateBundle() {

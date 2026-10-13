@@ -6,24 +6,12 @@ import type { IconDef, Mode } from '../model'
 type Props = {
   icon: IconDef | undefined
   mode: Mode
-  dirty: boolean
   onPatch: (patch: Partial<IconDef>) => void
   onReplaceSvg: () => void
   onDelete: () => void
-  onRevert: () => void
-  onSave: () => void
 }
 
-export function LibraryInspector({
-  icon,
-  mode,
-  dirty,
-  onPatch,
-  onReplaceSvg,
-  onDelete,
-  onRevert,
-  onSave,
-}: Props) {
+export function LibraryInspector({ icon, mode, onPatch, onReplaceSvg, onDelete }: Props) {
   if (!icon) {
     return (
       <div className="grid flex-1 place-items-center px-8 text-center text-[12px] leading-relaxed text-neutral-400 dark:text-neutral-500">
@@ -77,7 +65,7 @@ export function LibraryInspector({
         </Group>
       </div>
 
-      <Footer dirty={dirty} onDelete={onDelete} onRevert={onRevert} onSave={onSave} />
+      <Footer onDelete={onDelete} />
     </>
   )
 }

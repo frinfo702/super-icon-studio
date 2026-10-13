@@ -1,6 +1,5 @@
 import { ChevronsUpDown, Plus } from 'lucide-react'
 import { useState } from 'react'
-import { Footer } from '../components/Footer'
 import { IconCard } from '../components/IconCard'
 import {
   BACKGROUNDS,
@@ -73,7 +72,6 @@ type Props = {
   icon: IconDef | undefined
   mode: Mode
   tab: DesignTab
-  dirty: boolean
   presetId: string
   onTabChange: (tab: DesignTab) => void
   onPresetChange: (id: string) => void
@@ -83,15 +81,12 @@ type Props = {
   onPatchLabel: (id: string, patch: Partial<Label>) => void
   onRemoveLabel: (id: string) => void
   onReset: () => void
-  onRevert: () => void
-  onSave: () => void
 }
 
 export function DesignInspector({
   icon,
   mode,
   tab,
-  dirty,
   presetId,
   onTabChange,
   onPresetChange,
@@ -101,8 +96,6 @@ export function DesignInspector({
   onPatchLabel,
   onRemoveLabel,
   onReset,
-  onRevert,
-  onSave,
 }: Props) {
   if (!icon) return null
 
@@ -535,8 +528,6 @@ export function DesignInspector({
           )}
         </div>
       </div>
-
-      <Footer dirty={dirty} onRevert={onRevert} onSave={onSave} />
     </>
   )
 }
