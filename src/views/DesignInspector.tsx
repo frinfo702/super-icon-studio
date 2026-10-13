@@ -2,6 +2,7 @@ import { ChevronsUpDown } from 'lucide-react'
 import { Footer } from '../components/Footer'
 import { IconCard } from '../components/IconCard'
 import {
+  BACKGROUNDS,
   BLEND_MODES,
   GRADIENT_STYLES,
   SHAPES,
@@ -234,6 +235,12 @@ export function DesignInspector({
           {tab === 'card' ? (
             <>
               <ColorRow label="Color" value={a.card} onChange={(card) => onPatchAppearance({ card })} />
+              <SelectRow
+                label="Background"
+                value={a.background}
+                options={BACKGROUNDS}
+                onChange={(background) => onPatchAppearance({ background })}
+              />
               <SelectRow
                 label="Texture"
                 value={a.texture}

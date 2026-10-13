@@ -63,9 +63,13 @@ in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
 inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius),
 **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
-blend mode, blur), and **Card** (base colour, texture). Gradient, Highlight, Card and
-texture are stored per appearance, so light and dark are tuned separately; the sun/moon
-switch in the toolbar swaps between them for the whole window.
+blend mode, blur), and **Card** (base colour, background, texture). Gradient, Highlight,
+Card and texture are stored per appearance, so light and dark are tuned separately; the
+sun/moon switch in the toolbar swaps between them for the whole window.
+
+**Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
+construction circles an app-icon template shows — in the glyph's colour, so the drawing
+reads on any card. It exports with the icon.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
