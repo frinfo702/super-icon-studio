@@ -72,6 +72,11 @@ sun/moon switch in the toolbar swaps between them for the whole window.
 construction circles an app-icon template shows — in the glyph's colour, so the drawing
 reads on any card. It exports with the icon.
 
+**Label**, under the card, stamps a line of text over the icon in a pill — the badge a build
+reads. Text colour and pill colour are per appearance, and the pill's size follows the card,
+so the same label reads at 16 points and at 512. It exports as a real element: a tool that
+opens the SVG needs a font from the stack, so outline the text there if it has to travel.
+
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
 Circle rounds fully, which is why the corner radius slider steps aside for it.

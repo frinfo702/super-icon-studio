@@ -3,6 +3,7 @@ import { GLYPHS } from '../glyphs'
 import {
   BLUEPRINT,
   GLYPH_BASE,
+  LABEL,
   METAL_BANDS,
   cardBox,
   cardRadius,
@@ -10,6 +11,7 @@ import {
   type Background,
   type Gradient,
   type IconDef,
+  type Label,
   type Mode,
   type Texture,
 } from '../model'
@@ -63,6 +65,33 @@ function guideLayer(background: Background, glyph: string) {
         <path key={v} d={`M${v} ${inset} L${v} ${edge} M${inset} ${v} L${edge} ${v}`} />
       ))}
     </svg>
+  )
+}
+
+/** A line of text in a pill, low in the card, the way a build badge reads. */
+function labelLayer(label: Label, short: number) {
+  const text = label.text.trim()
+  if (!text) return null
+  const size = short * LABEL.size
+
+  return (
+    <span
+      aria-hidden
+      className="absolute left-1/2 flex max-w-[92%] -translate-x-1/2 items-center justify-center overflow-hidden font-semibold"
+      style={{
+        bottom: short * LABEL.bottom,
+        height: size * (1 + LABEL.padding),
+        paddingInline: size * (LABEL.padding + 0.15),
+        borderRadius: 999,
+        background: label.fill,
+        color: label.color,
+        fontSize: size,
+        letterSpacing: size * 0.04,
+        boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.18)',
+      }}
+    >
+      {text}
+    </span>
   )
 }
 
@@ -130,6 +159,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
   const highlight = hexToRgba(a.highlight.color, a.highlight.opacity / 100)
   const blur = a.highlight.blur * (short / 72)
   const guides = guideLayer(a.background, a.glyph)
+  const label = labelLayer(a.label, short)
   const texture = textureLayer(a.texture)
 
   return (
@@ -177,6 +207,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
       >
         <Glyph icon={icon} size={glyphSize} color={a.glyph} />
       </span>
+      {label}
     </div>
   )
 }

@@ -1,6 +1,7 @@
 import { ICONS } from './data/icons'
 import {
   DEFAULT_GRADIENT,
+  DEFAULT_LABEL,
   DEFAULT_HIGHLIGHT,
   DEFAULT_METRICS,
   appearance,
@@ -86,6 +87,7 @@ function normaliseAppearance(value: Appearance | undefined): Appearance {
   return {
     ...appearance('#000000'),
     ...value,
+    label: { ...DEFAULT_LABEL, ...value?.label },
     background: value?.background ?? 'Plain',
     texture: value?.texture ?? 'None',
     gradient: { ...DEFAULT_GRADIENT, ...value?.gradient },
