@@ -62,10 +62,10 @@ The left sidebar holds two sections.
 change its identifier and import an SVG of your own. The `+` button adds an icon and the
 trash deletes one. The toolbar's export buttons write the selected icon out: as an SVG, on a
 512 × 512 canvas for Icon Composer — the artwork at the ~80% coverage a macOS icon uses — or
-as the two layers it is built from, the card and the glyph over it, both at the size on
-screen, so a tool that stacks layers rebuilds the same icon. Edits save as they settle, and
-the sidebar shows `Saving` until the folder has them; the toolbar's back and forward buttons
-step through the edits.
+as the layers it is built from — the card, the glyph over it and one file per component — all
+on the same 512 × 512 canvas, so a tool that stacks them in order rebuilds the same icon.
+Edits save as they settle, and the sidebar shows `Saving` until the folder has them; the
+toolbar's back and forward buttons step through the edits.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
 inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius, peeled
