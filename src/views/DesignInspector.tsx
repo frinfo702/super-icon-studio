@@ -26,6 +26,7 @@ import {
   SelectRow,
   SliderRow,
   TextRow,
+  ToggleRow,
 } from '../components/rows'
 
 export type DesignTab = 'size' | 'gradient' | 'highlight' | 'card'
@@ -162,6 +163,12 @@ export function DesignInspector({
                   onChange={(cornerRadius) => onPatch({ metrics: { ...icon.metrics, cornerRadius } })}
                 />
               )}
+              <ToggleRow
+                label="Peeled corner"
+                checked={icon.metrics.peel}
+                def={false}
+                onChange={(peel) => onPatch({ metrics: { ...icon.metrics, peel } })}
+              />
             </>
           ) : null}
 
@@ -267,6 +274,7 @@ export function DesignInspector({
                 label="Background"
                 value={a.background}
                 options={BACKGROUNDS}
+                def="Plain"
                 onChange={(background) => onPatchAppearance({ background })}
               />
               <SelectRow
@@ -275,6 +283,12 @@ export function DesignInspector({
                 def="None"
                 options={TEXTURES}
                 onChange={(texture) => onPatchAppearance({ texture })}
+              />
+              <ToggleRow
+                label="Glass glyph"
+                checked={a.glyphGlass}
+                def={false}
+                onChange={(glyphGlass) => onPatchAppearance({ glyphGlass })}
               />
 
               <Section title="Label" />
