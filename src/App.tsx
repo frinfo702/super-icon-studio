@@ -1,4 +1,5 @@
 import {
+  AppWindow,
   Download,
   Layers,
   Grid2x2,
@@ -10,12 +11,13 @@ import {
   Plus,
   Rows3,
   Scaling,
+  Spline,
   Sun,
 } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { Segmented, ToolButton } from './components/rows'
 import { ICONS, blankIcon } from './data/icons'
-import { buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
+import { ICON_COMPOSER, buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
 import {
   DEFAULT_METRICS,
@@ -24,8 +26,10 @@ import {
   zoomFor,
   type Appearance,
   type IconDef,
+  type Metrics,
   type Mode,
 } from './model'
+import { movePathPoint } from './path'
 import { artworkFileFor, hydrate, readLibrary, writeLibrary } from './library'
 import { parseArtwork } from './svg'
 import { ComposerCanvas, ComposerInspector, ComposerSidebar } from './views/Composer'
@@ -58,6 +62,7 @@ export default function App() {
   const [designZoom, setDesignZoom] = useState(5)
   const [groupZoom, setGroupZoom] = useState(1.2)
   const [showSidebar, setShowSidebar] = useState(true)
+  const [editPoints, setEditPoints] = useState(false)
   const [showInspector, setShowInspector] = useState(true)
 
   const dark = mode === 'dark'
@@ -131,6 +136,22 @@ export default function App() {
     setSelectedId(next[Math.max(0, index - 1)]?.id ?? '')
   }
 
+  const editArtworkPoint = (pathIndex: number, pointIndex: number, x: number, y: number) => {
+    if (!selected?.artwork) return
+    const artwork = {
+      ...selected.artwork,
+      paths: selected.artwork.paths.map((path, index) =>
+        index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+      ),
+    }
+    patchIcon({ artwork })
+  }
+
+  const editMetrics = (patch: Partial<Metrics>) => {
+    if (!selected) return
+    patchIcon({ metrics: { ...selected.metrics, ...patch } })
+  }
+
   const replaceSvg = () => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -146,15 +167,18 @@ export default function App() {
     input.click()
   }
 
-  const exportSvg = () => {
+  const exportSvg = (forIconComposer = false) => {
     if (!selected) return
-    const markup = buildIconSvg(selected, mode, size)
-    if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}.svg`, markup)
+    const markup = forIconComposer
+      ? buildIconSvg(selected, mode, ICON_COMPOSER.card, ICON_COMPOSER)
+      : buildIconSvg(selected, mode, size)
+    const suffix = forIconComposer ? `-${ICON_COMPOSER.size}` : ''
+    if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}${suffix}.svg`, markup)
   }
 
   const exportSvgLayers = () => {
     if (!selected) return
-    const { card, glyph } = buildIconLayers(selected, mode, size)
+    const { card, glyph } = buildIconLayers(selected, mode)
     const base = `${selected.identifier || selected.name}-${mode}`
     if (card) downloadSvg(`${base}-card.svg`, card)
     if (glyph) downloadSvg(`${base}-glyph.svg`, glyph)
@@ -262,6 +286,9 @@ export default function App() {
                     size={size}
                     zoom={designZoom}
                     layout={designLayout}
+                    editing={editPoints}
+                    onEditPoint={editArtworkPoint}
+                    onEditMetrics={editMetrics}
                     onSizeChange={changeSize}
                   />
                 )}
@@ -301,6 +328,15 @@ export default function App() {
                       </ToolButton>
                     ) : (
                       <>
+                        {selected?.artwork ? (
+                          <ToolButton
+                            title={editPoints ? 'Stop editing the artwork points' : 'Edit the artwork points'}
+                            active={editPoints}
+                            onClick={() => setEditPoints((value) => !value)}
+                          >
+                            <Spline size={15} />
+                          </ToolButton>
+                        ) : null}
                         <ToolButton
                           title="Hero preview"
                           active={designLayout === 'hero'}
@@ -319,12 +355,20 @@ export default function App() {
                     )
                   ) : null}
                   {studio ? (
-                    <ToolButton
-                      title={`Export ${selected?.identifier ?? 'icon'} (${mode} mode) as SVG`}
-                      onClick={exportSvg}
-                    >
-                      <Download size={15} />
-                    </ToolButton>
+                    <>
+                      <ToolButton
+                        title={`Export ${selected?.identifier ?? 'icon'} (${mode} mode) as SVG`}
+                        onClick={() => exportSvg()}
+                      >
+                        <Download size={15} />
+                      </ToolButton>
+                      <ToolButton
+                        title={`Export ${selected?.identifier ?? 'icon'} for Icon Composer (${ICON_COMPOSER.size} × ${ICON_COMPOSER.size})`}
+                        onClick={() => exportSvg(true)}
+                      >
+                        <AppWindow size={15} />
+                      </ToolButton>
+                    </>
                   ) : null}
                   {studio ? (
                     <ToolButton
