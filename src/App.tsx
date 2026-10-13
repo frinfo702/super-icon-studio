@@ -218,10 +218,13 @@ export default function App() {
 
   const exportSvgLayers = () => {
     if (!selected) return
-    const { card, glyph } = buildIconLayers(selected, mode)
+    const { card, glyph, components } = buildIconLayers(selected, mode)
     const base = `${selected.identifier || selected.name}-${mode}`
     if (card) downloadSvg(`${base}-card.svg`, card)
     if (glyph) downloadSvg(`${base}-glyph.svg`, glyph)
+    for (const component of components) {
+      if (component.markup) downloadSvg(`${base}-${component.id}.svg`, component.markup)
+    }
   }
 
   const save = async () => {
@@ -414,7 +417,7 @@ export default function App() {
                   ) : null}
                   {studio ? (
                     <ToolButton
-                      title={`Export ${selected?.identifier ?? 'icon'} as two layers (card and glyph)`}
+                      title={`Export ${selected?.identifier ?? 'icon'} as layers (card, glyph and a file per component)`}
                       onClick={exportSvgLayers}
                     >
                       <Layers size={15} />

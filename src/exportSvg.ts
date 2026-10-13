@@ -245,6 +245,12 @@ function labelMarkup(label: Label, a: Appearance, box: { width: number; height: 
 }
 
 /**
+ * What one written file carries: the whole icon, the card, the glyph, or a single component —
+ * `label:` and the component's id.
+ */
+export type IconLayer = 'all' | 'card' | 'glyph' | `label:${string}`
+
+/**
  * Writes the finished icon — highlight ring, card, finish and glyph — as a standalone SVG.
  * The glyph is cloned out of the live DOM, so custom imports and bundled glyphs both export
  * the same geometry that is on screen. The drop shadow and the inset vignette are drawn here
@@ -256,8 +262,8 @@ export function buildIconSvg(
   size: number,
   /** Sizes the canvas around the drawing, at `coverage` of it, instead of the drawing itself. */
   canvas?: { size: number; coverage: number },
-  /** `all` draws the icon; `card` and `glyph` draw one side of it, on the same canvas. */
-  layer: 'all' | 'card' | 'glyph' = 'all',
+  /** `all` draws every layer; the rest draw one of them, on the same canvas. */
+  layer: IconLayer = 'all',
 ): string | null {
   // The template guides are an overlay in the same card, so the glyph is the other svg.
   const source = document.querySelector(`[data-icon="${icon.id}"] svg:not([data-guide])`)
@@ -307,10 +313,13 @@ export function buildIconSvg(
   const peel = icon.metrics.peel ? peelMarkup(a.card, box, ring, radius, short) : null
   const guides = guideMarkup(a, box, ring, radius)
   const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
-  const labels = a.labels.map((component) => labelMarkup(component, a, box, ring, short))
+  const labels = a.labels.map((component) => ({
+    id: component.id,
+    ...labelMarkup(component, a, box, ring, short),
+  }))
 
   // The two sides of the icon: what the card carries, and what sits over it. A layer export
-  // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
+  // writes each of them on its own, on the same canvas, so stacking the files rebuilds the icon.
   const surface = [
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
@@ -321,11 +330,21 @@ export function buildIconSvg(
     glass?.layers ?? '',
     peel?.layers ?? '',
   ]
-  const over = [glyph.outerHTML, ...labels.map((entry) => entry.markup)].filter(Boolean)
+
+  // The layer a file carries: the card, the glyph, one component, or all of them in the order
+  // they stack.
+  const component = layer.startsWith('label:') ? layer.slice('label:'.length) : null
+  const body = component
+    ? labels.filter((entry) => entry.id === component).map((entry) => entry.markup)
+    : layer === 'card'
+      ? surface
+      : layer === 'glyph'
+        ? [glyph.outerHTML]
+        : [...surface, glyph.outerHTML, ...labels.map((entry) => entry.markup)]
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
-    `<title>${icon.name}${layer === 'all' ? '' : ` (${layer})`}</title>`,
+    `<title>${icon.name}${layer === 'all' ? '' : ` (${component ?? layer})`}</title>`,
     `<defs>${gradientMarkup(a.gradient, { width: short, height: short }, { x: ring, y: ring })}`,
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
     texture.defs,
@@ -335,20 +354,24 @@ export function buildIconSvg(
     glyphGlass,
     ...labels.map((entry) => entry.defs),
     `</defs>`,
-    ...(layer === 'glyph' ? [] : surface),
-    ...(layer === 'card' ? [] : over),
+    ...body,
     `</svg>`,
   ].join('')
 }
 
 /**
- * The two files an app icon is layered from: the card, and what sits over it, on the canvas
- * and at the coverage a macOS icon uses, so a tool can stack them into one icon.
+ * The files an app icon is layered from: the card, the glyph over it and one file per
+ * component, in the order they stack. All of them sit on the canvas and at the coverage a
+ * macOS icon uses, so a tool can stack them back into one icon.
  */
 export function buildIconLayers(icon: IconDef, mode: Mode) {
-  const build = (layer: 'card' | 'glyph') =>
-    buildIconSvg(icon, mode, ICON_COMPOSER.card, ICON_COMPOSER, layer)
-  return { card: build('card'), glyph: build('glyph') }
+  const build = (layer: IconLayer) => buildIconSvg(icon, mode, ICON_COMPOSER.card, ICON_COMPOSER, layer)
+  const components = icon[mode].labels.filter((label) => label.text.trim())
+  return {
+    card: build('card'),
+    glyph: build('glyph'),
+    components: components.map((label) => ({ id: label.id, markup: build(`label:${label.id}`) })),
+  }
 }
 
 export function downloadSvg(filename: string, markup: string) {
