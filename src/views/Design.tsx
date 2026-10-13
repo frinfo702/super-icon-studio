@@ -40,7 +40,7 @@ export function Design({ icon, mode, sizes, size, zoom, layout, onSizeChange }: 
       <div className="grid flex-1 place-items-center pb-8 pt-14">
         <IconCard icon={icon} mode={mode} size={Math.round(size * zoom)} />
       </div>
-      <div className="overflow-x-auto pb-16">
+      <div className="overflow-x-auto pb-16 pt-2">
         <div className="mx-auto flex w-max items-end gap-3 px-6">
           {sizes.map((value) => (
             <button
