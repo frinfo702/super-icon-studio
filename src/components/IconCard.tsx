@@ -1,3 +1,4 @@
+import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
 import { hexToRgba, mixHex } from '../color'
 import { GLYPHS } from '../glyphs'
 import { ArtworkPoints } from './ArtworkPoints'
@@ -5,12 +6,13 @@ import {
   BLUEPRINT,
   GLASS,
   GLYPH_BASE,
-  LABEL,
+  LABEL_PADDING,
   METAL_BANDS,
   PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
+  labelBox,
   type Background,
   type Gradient,
   type IconDef,
@@ -93,26 +95,81 @@ function guideLayer(background: Background, glyph: string) {
   )
 }
 
-/** A line of text in a pill, low in the card, the way a build badge reads. */
-function labelLayer(label: Label, short: number) {
+/**
+ * A component's badge: its line of text on the background its shape carries, placed where the
+ * component says. Given a way to report a drag it can be moved on the card itself, which
+ * reports the same offsets the inspector's rows hold.
+ */
+function LabelBadge({
+  label,
+  box,
+  short,
+  onMove,
+}: {
+  label: Label
+  /** The card's own box, in the card's units. */
+  box: { width: number; height: number }
+  short: number
+  onMove?: (id: string, x: number, y: number) => void
+}) {
+  const held = useRef<{ x: number; y: number; clientX: number; clientY: number } | null>(null)
+  const [dragging, setDragging] = useState(false)
   const text = label.text.trim()
+
+  const begin = (event: ReactPointerEvent<HTMLSpanElement>) => {
+    if (!onMove) return
+    event.preventDefault()
+    event.stopPropagation()
+    // Capture keeps the drag alive outside the badge; it can refuse a pointer that is gone.
+    try {
+      event.currentTarget.setPointerCapture(event.pointerId)
+    } catch {
+      // A pointer the browser no longer knows: the events still arrive at this element.
+    }
+    held.current = { x: label.x, y: label.y, clientX: event.clientX, clientY: event.clientY }
+    setDragging(true)
+  }
+
+  const move = (event: ReactPointerEvent<HTMLSpanElement>) => {
+    const start = held.current
+    if (!start || !onMove) return
+    onMove(
+      label.id,
+      start.x + ((event.clientX - start.clientX) / short) * 100,
+      start.y + ((event.clientY - start.clientY) / short) * 100,
+    )
+  }
+
+  const end = () => {
+    held.current = null
+    setDragging(false)
+  }
+
   if (!text) return null
-  const size = short * LABEL.size
+  const { fontSize, height, radius, cx, cy } = labelBox(label, box, short)
 
   return (
     <span
       aria-hidden
-      className="absolute left-1/2 flex max-w-[92%] -translate-x-1/2 items-center justify-center overflow-hidden font-semibold"
+      data-label={label.id}
+      onPointerDown={begin}
+      onPointerMove={move}
+      onPointerUp={end}
+      onPointerCancel={end}
+      className={`absolute left-1/2 top-1/2 flex max-w-[92%] items-center justify-center overflow-hidden font-semibold ${
+        onMove ? 'touch-none select-none' : 'pointer-events-none'
+      }`}
       style={{
-        bottom: short * LABEL.bottom,
-        height: size * (1 + LABEL.padding),
-        paddingInline: size * (LABEL.padding + 0.15),
-        borderRadius: 999,
-        background: label.fill,
+        height,
+        paddingInline: fontSize * (LABEL_PADDING + 0.15),
+        borderRadius: radius,
+        background: label.background ? label.fill : undefined,
         color: label.color,
-        fontSize: size,
-        letterSpacing: size * 0.04,
-        boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.18)',
+        fontSize,
+        letterSpacing: fontSize * 0.04,
+        boxShadow: label.background ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.18)' : undefined,
+        transform: `translate(-50%, -50%) translate(${cx - box.width / 2}px, ${cy - box.height / 2}px)`,
+        cursor: onMove ? (dragging ? 'grabbing' : 'grab') : undefined,
       }}
     >
       {text}
@@ -210,6 +267,8 @@ type Props = {
   editing?: boolean
   onEditPoint?: (pathIndex: number, pointIndex: number, x: number, y: number) => void
   onEditMetrics?: (patch: Partial<Metrics>) => void
+  /** Lets the components be dragged on the card, which is how their place is dialled in. */
+  onMoveLabel?: (id: string, x: number, y: number) => void
 }
 
 export function IconCard({
@@ -221,6 +280,7 @@ export function IconCard({
   editing = false,
   onEditPoint,
   onEditMetrics,
+  onMoveLabel,
 }: Props) {
   const a = icon[mode]
   const shape = icon.metrics.shape
@@ -243,7 +303,9 @@ export function IconCard({
   const glyphFilter = a.glyphGlass
     ? `opacity(${GLASS.glyphOpacity}) drop-shadow(0 ${GLASS.glyphRim.dy * (short / 72)}px ${GLASS.glyphRim.blur * (short / 72)}px ${hexToRgba('#FFFFFF', GLASS.glyphRim.opacity)}) drop-shadow(0 ${GLASS.glyphShadow.dy * (short / 72)}px ${GLASS.glyphShadow.blur * (short / 72)}px ${hexToRgba('#000000', GLASS.glyphShadow.opacity)})`
     : undefined
-  const label = labelLayer(a.label, short)
+  const labels = a.labels.map((label) => (
+    <LabelBadge key={label.id} label={label} box={box} short={short} onMove={onMoveLabel} />
+  ))
   const texture = textureLayer(a.texture)
 
   return (
@@ -300,7 +362,7 @@ export function IconCard({
         ) : null}
       </span>
       {peel}
-      {label}
+      {labels}
     </div>
   )
 }

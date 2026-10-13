@@ -9,6 +9,7 @@ import {
   type Appearance,
   type Artwork,
   type IconDef,
+  type Label,
 } from './model'
 import { parseArtwork, serializeSvg } from './svg'
 
@@ -83,16 +84,24 @@ export function hydrate(payload: LibraryPayload): IconDef[] {
 }
 
 /** Fills in fields a catalogue written by an older build would not have. */
-function normaliseAppearance(value: Appearance | undefined): Appearance {
+function normaliseAppearance(value: (Partial<Appearance> & { label?: Omit<Label, 'id'> }) | undefined): Appearance {
+  // An older build wrote one label outside the list; it comes back as the first component.
+  const { label: written, ...rest } = value ?? {}
+  const components: Partial<Label>[] = rest.labels ?? (written ? [written] : [])
+
   return {
     ...appearance('#000000'),
-    ...value,
-    label: { ...DEFAULT_LABEL, ...value?.label },
-    background: value?.background ?? 'Plain',
-    glyphGlass: value?.glyphGlass ?? false,
-    texture: value?.texture ?? 'None',
-    gradient: { ...DEFAULT_GRADIENT, ...value?.gradient },
-    highlight: { ...DEFAULT_HIGHLIGHT, ...value?.highlight },
+    ...rest,
+    labels: components.map((component, index) => ({
+      ...DEFAULT_LABEL,
+      ...component,
+      id: component.id ?? `label-${index + 1}`,
+    })),
+    background: rest.background ?? 'Plain',
+    glyphGlass: rest.glyphGlass ?? false,
+    texture: rest.texture ?? 'None',
+    gradient: { ...DEFAULT_GRADIENT, ...rest.gradient },
+    highlight: { ...DEFAULT_HIGHLIGHT, ...rest.highlight },
   }
 }
 

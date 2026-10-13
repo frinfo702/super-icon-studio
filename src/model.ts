@@ -28,7 +28,7 @@ export type Highlight = {
 export type Appearance = {
   card: string
   glyph: string
-  label: Label
+  labels: Label[]
   background: Background
   glyphGlass: boolean
   texture: Texture
@@ -57,16 +57,65 @@ export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint', 'Liquid glass'] as con
 export type Background = (typeof BACKGROUNDS)[number]
 
 /**
-/**
- * The label badge: how tall its letters are against the card's short side, how much room they
- * get inside the pill, and how far the pill sits from the bottom edge.
+ * A component sits over the card with a line of text in a badge, the way a build badge reads.
+ * Its size and its place are shares of the card's short side, so it keeps them at every size;
+ * its colours are per appearance, like the rest of the finish.
  */
-export const LABEL = { size: 0.15, padding: 0.45, bottom: 0.09 }
+export type Label = {
+  id: string
+  text: string
+  /** How tall the letters are, as a percentage of the card's short side. */
+  size: number
+  /** Where the badge's centre sits, from the card's centre, as a percentage of its short side. */
+  x: number
+  y: number
+  shape: LabelShape
+  /** The corner radius, as a share of the badge's height, while the shape is Rounded. */
+  radius: number
+  background: boolean
+  color: string
+  fill: string
+}
 
-/** A line of text over the card, in a pill, the way a build badge reads. */
-export type Label = { text: string; color: string; fill: string }
+export const LABEL_SHAPES = ['Pill', 'Rounded', 'Square'] as const
+export type LabelShape = (typeof LABEL_SHAPES)[number]
 
-export const DEFAULT_LABEL: Label = { text: '', color: '#FFFFFF', fill: '#1C1C1E' }
+/** What the badge's background can be: the fill colour, or nothing but letters. */
+export const LABEL_BACKGROUNDS = ['Solid', 'None'] as const
+
+/** How far a component can be dragged from the card's centre, as a percentage of its short side. */
+export const LABEL_RANGE = 50
+
+/** How much room the text gets inside the badge, against its own size. */
+export const LABEL_PADDING = 0.45
+
+export const DEFAULT_LABEL: Omit<Label, 'id'> = {
+  text: '',
+  size: 15,
+  x: 0,
+  y: 30,
+  shape: 'Pill',
+  radius: 25,
+  background: true,
+  color: '#FFFFFF',
+  fill: '#1C1C1E',
+}
+
+/** The text a component starts life with, so a fresh one shows what it is for. */
+export const LABEL_PLACEHOLDER = 'BETA'
+
+/** Where a component's badge sits and how its corners are rounded, in the card's own units. */
+export function labelBox(label: Label, card: { width: number; height: number }, short: number) {
+  const fontSize = (short * label.size) / 100
+  const height = fontSize * (1 + LABEL_PADDING)
+  return {
+    fontSize,
+    height,
+    radius: label.shape === 'Pill' ? height / 2 : label.shape === 'Square' ? 0 : (height * label.radius) / 100,
+    cx: card.width / 2 + (short * label.x) / 100,
+    cy: card.height / 2 + (short * label.y) / 100,
+  }
+}
 
 /**
  * The glass surface: the wash over the card, the light along its top edge, the shadow along
@@ -223,11 +272,19 @@ export const DEFAULT_METRICS: Metrics = {
 /** How much of the card the glyph covers before the glyph scale is applied. */
 export const GLYPH_BASE = 0.44
 
+/** The next component name neither appearance is using, so both draw the same component. */
+export function nextLabelId(icon: IconDef) {
+  const taken = new Set([...icon.light.labels, ...icon.dark.labels].map((label) => label.id))
+  let index = 1
+  while (taken.has(`label-${index}`)) index += 1
+  return `label-${index}`
+}
+
 export function appearance(card: string, glyph = '#FFFFFF'): Appearance {
   return {
     card,
     glyph,
-    label: { ...DEFAULT_LABEL },
+    labels: [],
     background: 'Plain',
     glyphGlass: false,
     texture: 'None',
