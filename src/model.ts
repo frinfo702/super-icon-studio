@@ -39,6 +39,8 @@ export type Metrics = {
   glyphScale: number
   cornerRadius: number
   shape: Shape
+  /** Where the glyph sits in the card, as a percentage of the card's short side. */
+  glyphOffset: { x: number; y: number }
   /** A corner folded back, showing the underside of the card. */
   peel: boolean
 }
@@ -201,6 +203,7 @@ export const DEFAULT_METRICS: Metrics = {
   glyphScale: 125,
   cornerRadius: 30,
   shape: 'Square',
+  glyphOffset: { x: 0, y: 0 },
   peel: false,
 }
 

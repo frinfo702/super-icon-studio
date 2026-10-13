@@ -1,6 +1,6 @@
 import { IconCard } from '../components/IconCard'
 import { IconFrame } from '../components/IconFrame'
-import { TILE_CAP, type IconDef, type Mode } from '../model'
+import { TILE_CAP, type IconDef, type Metrics, type Mode } from '../model'
 
 type Props = {
   icon: IconDef | undefined
@@ -10,9 +10,23 @@ type Props = {
   zoom: number
   layout: 'hero' | 'grid'
   onSizeChange: (size: number) => void
+  editing?: boolean
+  onEditPoint?: (pathIndex: number, pointIndex: number, x: number, y: number) => void
+  onEditMetrics?: (patch: Partial<Metrics>) => void
 }
 
-export function Design({ icon, mode, sizes, size, zoom, layout, onSizeChange }: Props) {
+export function Design({
+  icon,
+  mode,
+  sizes,
+  size,
+  zoom,
+  layout,
+  onSizeChange,
+  editing,
+  onEditPoint,
+  onEditMetrics,
+}: Props) {
   if (!icon) return null
 
   if (layout === 'grid') {
@@ -38,7 +52,14 @@ export function Design({ icon, mode, sizes, size, zoom, layout, onSizeChange }: 
   return (
     <div className="flex h-full flex-col">
       <div className="grid flex-1 place-items-center pb-8 pt-14">
-        <IconCard icon={icon} mode={mode} size={Math.round(size * zoom)} />
+        <IconCard
+          icon={icon}
+          mode={mode}
+          size={Math.round(size * zoom)}
+          editing={editing}
+          onEditPoint={onEditPoint}
+          onEditMetrics={onEditMetrics}
+        />
       </div>
       <div className="overflow-x-auto pb-16 pt-2">
         <div className="mx-auto flex w-max items-end gap-3 px-6">

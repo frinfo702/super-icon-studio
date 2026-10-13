@@ -208,8 +208,9 @@ export function buildIconSvg(
   glyph.removeAttribute('style')
   glyph.setAttribute('width', String(glyphSize))
   glyph.setAttribute('height', String(glyphSize))
-  glyph.setAttribute('x', String((totalWidth - glyphSize) / 2))
-  glyph.setAttribute('y', String((totalHeight - glyphSize) / 2))
+  const offset = icon.metrics.glyphOffset
+  glyph.setAttribute('x', String((totalWidth - glyphSize) / 2 + (short * offset.x) / 100))
+  glyph.setAttribute('y', String((totalHeight - glyphSize) / 2 + (short * offset.y) / 100))
   const unit = short / 72
   glyph.setAttribute('color', a.glyph)
   for (const path of glyph.querySelectorAll('path')) {
