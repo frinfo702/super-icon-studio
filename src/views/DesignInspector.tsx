@@ -264,6 +264,7 @@ export function DesignInspector({
                 label="Background"
                 value={a.background}
                 options={BACKGROUNDS}
+                def="Plain"
                 onChange={(background) => onPatchAppearance({ background })}
               />
               <SelectRow
@@ -272,6 +273,12 @@ export function DesignInspector({
                 def="None"
                 options={TEXTURES}
                 onChange={(texture) => onPatchAppearance({ texture })}
+              />
+              <ToggleRow
+                label="Glass glyph"
+                checked={a.glyphGlass}
+                def={false}
+                onChange={(glyphGlass) => onPatchAppearance({ glyphGlass })}
               />
             </>
           ) : null}

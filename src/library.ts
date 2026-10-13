@@ -87,6 +87,7 @@ function normaliseAppearance(value: Appearance | undefined): Appearance {
     ...appearance('#000000'),
     ...value,
     background: value?.background ?? 'Plain',
+    glyphGlass: value?.glyphGlass ?? false,
     texture: value?.texture ?? 'None',
     gradient: { ...DEFAULT_GRADIENT, ...value?.gradient },
     highlight: { ...DEFAULT_HIGHLIGHT, ...value?.highlight },
