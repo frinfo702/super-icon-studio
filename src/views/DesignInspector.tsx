@@ -9,6 +9,7 @@ import {
   DEFAULT_METRICS,
   GRADIENT_STYLES,
   LABEL_BACKGROUNDS,
+  LABEL_HIGHLIGHTS,
   LABEL_PLACEHOLDER,
   LABEL_RANGE,
   LABEL_SHAPES,
@@ -366,17 +367,82 @@ export function DesignInspector({
             <Group>
               <SelectRow
                 label="Background"
-                value={label.background ? 'Solid' : 'None'}
+                value={label.background}
                 options={LABEL_BACKGROUNDS}
-                onChange={(background) => onPatchLabel(label.id, { background: background === 'Solid' })}
+                def={DEFAULT_LABEL.background}
+                onChange={(background) => onPatchLabel(label.id, { background })}
               />
-              {label.background ? (
+              {label.background === 'Solid' ? (
                 <ColorRow
                   label="Fill"
                   value={label.fill}
                   def={DEFAULT_LABEL.fill}
                   onChange={(fill) => onPatchLabel(label.id, { fill })}
                 />
+              ) : null}
+              {label.background === 'Gradient' ? (
+                <>
+                  <ColorRow
+                    label="Start"
+                    value={label.fill}
+                    def={DEFAULT_LABEL.fill}
+                    onChange={(fill) => onPatchLabel(label.id, { fill })}
+                  />
+                  <ColorRow
+                    label="End"
+                    value={label.fillEnd}
+                    def={DEFAULT_LABEL.fillEnd}
+                    onChange={(fillEnd) => onPatchLabel(label.id, { fillEnd })}
+                  />
+                  <SliderRow
+                    label="Angle"
+                    value={label.angle}
+                    min={0}
+                    max={360}
+                    suffix="°"
+                    def={DEFAULT_LABEL.angle}
+                    onChange={(angle) => onPatchLabel(label.id, { angle })}
+                  />
+                </>
+              ) : null}
+              {label.background === 'None' ? null : (
+                <SliderRow
+                  label="Opacity"
+                  value={label.opacity}
+                  min={0}
+                  max={100}
+                  def={DEFAULT_LABEL.opacity}
+                  onChange={(opacity) => onPatchLabel(label.id, { opacity })}
+                />
+              )}
+            </Group>
+
+            <Section title="Highlight" />
+            <Group>
+              <SelectRow
+                label="Highlight"
+                value={label.highlight}
+                options={LABEL_HIGHLIGHTS}
+                def={DEFAULT_LABEL.highlight}
+                onChange={(highlight) => onPatchLabel(label.id, { highlight })}
+              />
+              {label.highlight === 'Custom' ? (
+                <>
+                  <ColorRow
+                    label="Color"
+                    value={label.highlightColor}
+                    def={DEFAULT_LABEL.highlightColor}
+                    onChange={(highlightColor) => onPatchLabel(label.id, { highlightColor })}
+                  />
+                  <SliderRow
+                    label="Opacity"
+                    value={label.highlightOpacity}
+                    min={0}
+                    max={100}
+                    def={DEFAULT_LABEL.highlightOpacity}
+                    onChange={(highlightOpacity) => onPatchLabel(label.id, { highlightOpacity })}
+                  />
+                </>
               ) : null}
             </Group>
 

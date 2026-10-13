@@ -93,15 +93,23 @@ metrics, stored with the rest of the icon's settings.
 
 **Components** are the pieces drawn over the card. The `+` beside the panels adds a text
 component — a line of text in a badge, the badge a build reads — and the component's tab
-holds everything about it: the text, the font size, the two colours, the background (its
-fill, or nothing but letters), the shape (Pill, Rounded with a corner radius, or Square), and
-its place. Size and place are shares of the card's short side, so one component reads the same
-at 16 points and at 512. A component can be dragged about the hero preview instead of dialled
-in, and the drag reports the same offsets the X and Y rows hold; `Remove component` takes it
-off the icon. A new component lands in both appearances at once and then takes their colours
-separately, so light and dark draw the same set of them. Components export as real elements: a
-tool that opens the SVG needs a font from the stack, so outline the text there if it has to
-travel.
+holds everything about it: the text, the font size, the text colour, what the badge sits on,
+its highlight, the shape (Pill, Rounded with a corner radius, or Square), and its place. Size
+and place are shares of the card's short side, so one component reads the same at 16 points
+and at 512. A component can be dragged about the hero preview instead of dialled in, and the
+drag reports the same offsets the X and Y rows hold; `Remove component` takes it off the icon.
+A new component lands in both appearances at once and then takes their colours separately, so
+light and dark draw the same set of them. Components export as real elements: a tool that
+opens the SVG needs a font from the stack, so outline the text there if it has to travel.
+
+A component's **Background** is a choice of four: `None` for letters with nothing under them,
+`Solid` for one fill colour, `Gradient` for two colours and the angle they run at, and
+`Inherit`, where the badge takes the card's own colour and finish and needs no colours of its
+own — the card keeps a component that follows it in step across both appearances. Solid,
+gradient and inherited backgrounds all carry an opacity, so a badge can sit half into the card
+rather than on top of it. The **Highlight** is the ring around the badge: either the two
+values a component holds itself, or the card's highlight, which is how a component reads as
+part of the card rather than a sticker on it.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and

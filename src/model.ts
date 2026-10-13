@@ -72,16 +72,35 @@ export type Label = {
   shape: LabelShape
   /** The corner radius, as a share of the badge's height, while the shape is Rounded. */
   radius: number
-  background: boolean
+  background: LabelBackground
+  /** How much of the badge's background shows, the way the text does not. */
+  opacity: number
   color: string
+  /** The solid fill, or where a gradient starts. */
   fill: string
+  /** Where a gradient ends. */
+  fillEnd: string
+  /** A gradient's direction, in the degrees CSS reads: 0 points up, 90 to the right. */
+  angle: number
+  highlight: LabelHighlight
+  highlightColor: string
+  highlightOpacity: number
 }
 
 export const LABEL_SHAPES = ['Pill', 'Rounded', 'Square'] as const
 export type LabelShape = (typeof LABEL_SHAPES)[number]
 
-/** What the badge's background can be: the fill colour, or nothing but letters. */
-export const LABEL_BACKGROUNDS = ['Solid', 'None'] as const
+/**
+ * What the badge sits on: nothing, a colour of its own, a gradient of its own, or the card's
+ * own colour and finish. A component that inherits needs no colours of its own, and picks up
+ * whatever the card is given in the mode it is drawn in.
+ */
+export const LABEL_BACKGROUNDS = ['None', 'Solid', 'Gradient', 'Inherit'] as const
+export type LabelBackground = (typeof LABEL_BACKGROUNDS)[number]
+
+/** Where the badge's ring comes from: the two values it holds, or the card's highlight. */
+export const LABEL_HIGHLIGHTS = ['Custom', 'Inherit'] as const
+export type LabelHighlight = (typeof LABEL_HIGHLIGHTS)[number]
 
 /** How far a component can be dragged from the card's centre, as a percentage of its short side. */
 export const LABEL_RANGE = 50
@@ -96,9 +115,15 @@ export const DEFAULT_LABEL: Omit<Label, 'id'> = {
   y: 30,
   shape: 'Pill',
   radius: 25,
-  background: true,
+  background: 'Solid',
+  opacity: 100,
   color: '#FFFFFF',
   fill: '#1C1C1E',
+  fillEnd: '#48484A',
+  angle: 180,
+  highlight: 'Custom',
+  highlightColor: '#FFFFFF',
+  highlightOpacity: 18,
 }
 
 /** The text a component starts life with, so a fresh one shows what it is for. */
@@ -115,6 +140,32 @@ export function labelBox(label: Label, card: { width: number; height: number }, 
     cx: card.width / 2 + (short * label.x) / 100,
     cy: card.height / 2 + (short * label.y) / 100,
   }
+}
+
+/**
+ * The line a badge's own gradient runs along, in the badge's box: the way CSS reads an angle,
+ * and long enough to span the box at it, so the preview and the exporter draw the same one.
+ */
+export function gradientLine(angle: number, box: { width: number; height: number }) {
+  const radians = (angle * Math.PI) / 180
+  const dx = Math.sin(radians)
+  const dy = -Math.cos(radians)
+  const length = Math.abs(dx) * box.width + Math.abs(dy) * box.height
+  const x = box.width / 2
+  const y = box.height / 2
+
+  return {
+    x1: x - (dx * length) / 2,
+    y1: y - (dy * length) / 2,
+    x2: x + (dx * length) / 2,
+    y2: y + (dy * length) / 2,
+  }
+}
+
+/** The ring a component draws: the card's highlight, or the two values the badge holds. */
+export function labelRing(label: Label, a: Appearance) {
+  if (label.highlight === 'Custom') return { color: label.highlightColor, opacity: label.highlightOpacity }
+  return { color: a.highlight.color, opacity: a.highlight.opacity }
 }
 
 /**

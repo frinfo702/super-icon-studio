@@ -1,4 +1,4 @@
-import { useRef, useState, type PointerEvent as ReactPointerEvent } from 'react'
+import { useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent } from 'react'
 import { hexToRgba, mixHex } from '../color'
 import { GLYPHS } from '../glyphs'
 import { ArtworkPoints } from './ArtworkPoints'
@@ -13,6 +13,8 @@ import {
   cardRadius,
   cardShortSide,
   labelBox,
+  labelRing,
+  type Appearance,
   type Background,
   type Gradient,
   type IconDef,
@@ -96,17 +98,40 @@ function guideLayer(background: Background, glyph: string) {
 }
 
 /**
- * A component's badge: its line of text on the background its shape carries, placed where the
- * component says. Given a way to report a drag it can be moved on the card itself, which
- * reports the same offsets the inspector's rows hold.
+ * What a badge sits on: nothing, a colour or a gradient of its own, or — when it inherits — the
+ * card's own colour and finish, drawn into the badge so it reads as a piece of the card.
+ */
+function badgeBackground(label: Label, card: Appearance): CSSProperties | undefined {
+  const alpha = label.opacity / 100
+  if (label.background === 'None') return undefined
+  if (label.background === 'Solid') return { backgroundColor: hexToRgba(label.fill, alpha) }
+  if (label.background === 'Gradient') {
+    return {
+      backgroundImage: `linear-gradient(${label.angle}deg, ${hexToRgba(label.fill, alpha)}, ${hexToRgba(label.fillEnd, alpha)})`,
+    }
+  }
+  return {
+    backgroundColor: hexToRgba(card.card, alpha),
+    backgroundImage: gradientLayer(card.gradient, alpha),
+    backgroundBlendMode: BLEND[card.gradient.blend] ?? card.gradient.blend.toLowerCase(),
+  }
+}
+
+/**
+ * A component's badge: its line of text on the background it asks for, with the ring it draws.
+ * Given a way to report a drag it can be moved on the card itself, which reports the same
+ * offsets the inspector's rows hold.
  */
 function LabelBadge({
   label,
+  card,
   box,
   short,
   onMove,
 }: {
   label: Label
+  /** The appearance the card is drawn in, which is what a component that inherits picks up. */
+  card: Appearance
   /** The card's own box, in the card's units. */
   box: { width: number; height: number }
   short: number
@@ -147,6 +172,8 @@ function LabelBadge({
 
   if (!text) return null
   const { fontSize, height, radius, cx, cy } = labelBox(label, box, short)
+  const ring = Math.max(1, height * 0.032)
+  const highlight = labelRing(label, card)
 
   return (
     <span
@@ -163,11 +190,11 @@ function LabelBadge({
         height,
         paddingInline: fontSize * (LABEL_PADDING + 0.15),
         borderRadius: radius,
-        background: label.background ? label.fill : undefined,
+        ...badgeBackground(label, card),
         color: label.color,
         fontSize,
         letterSpacing: fontSize * 0.04,
-        boxShadow: label.background ? 'inset 0 0 0 1px rgba(255, 255, 255, 0.18)' : undefined,
+        boxShadow: `inset 0 0 0 ${ring}px ${hexToRgba(highlight.color, highlight.opacity / 100)}`,
         transform: `translate(-50%, -50%) translate(${cx - box.width / 2}px, ${cy - box.height / 2}px)`,
         cursor: onMove ? (dragging ? 'grabbing' : 'grab') : undefined,
       }}
@@ -198,21 +225,22 @@ function glassLayer() {
   )
 }
 
-function gradientLayer(g: Gradient) {
-  const alpha = Math.min(1, g.strength / 100) * 0.35
+/** The card's own gradient — a light wash over its colour — as a CSS layer a badge can wear too. */
+function gradientLayer(g: Gradient, fade = 1) {
+  const alpha = Math.min(1, g.strength / 100) * 0.35 * fade
 
 
   const stop = `rgba(255,255,255,${alpha})`
   const x = 50 + g.offsetX
   const y = 50 + g.offsetY
-  const fade = Math.max(10, Math.min(95, g.sizeY / 6))
+  const reach = Math.max(10, Math.min(95, g.sizeY / 6))
   if (g.style === 'Radial') {
-    return `radial-gradient(${g.sizeX}% ${g.sizeY}% at ${x}% ${y}%, ${stop} 0%, rgba(255,255,255,0) ${fade}%)`
+    return `radial-gradient(${g.sizeX}% ${g.sizeY}% at ${x}% ${y}%, ${stop} 0%, rgba(255,255,255,0) ${reach}%)`
   }
   if (g.style === 'Linear') {
-    return `linear-gradient(${180 + g.offsetX}deg, ${stop} 0%, rgba(255,255,255,0) ${fade}%)`
+    return `linear-gradient(${180 + g.offsetX}deg, ${stop} 0%, rgba(255,255,255,0) ${reach}%)`
   }
-  return `conic-gradient(from ${g.offsetX * 3.6}deg at ${x}% ${y}%, ${stop} 0%, rgba(255,255,255,0) ${fade}%)`
+  return `conic-gradient(from ${g.offsetX * 3.6}deg at ${x}% ${y}%, ${stop} 0%, rgba(255,255,255,0) ${reach}%)`
 }
 
 export function Glyph({
@@ -304,7 +332,7 @@ export function IconCard({
     ? `opacity(${GLASS.glyphOpacity}) drop-shadow(0 ${GLASS.glyphRim.dy * (short / 72)}px ${GLASS.glyphRim.blur * (short / 72)}px ${hexToRgba('#FFFFFF', GLASS.glyphRim.opacity)}) drop-shadow(0 ${GLASS.glyphShadow.dy * (short / 72)}px ${GLASS.glyphShadow.blur * (short / 72)}px ${hexToRgba('#000000', GLASS.glyphShadow.opacity)})`
     : undefined
   const labels = a.labels.map((label) => (
-    <LabelBadge key={label.id} label={label} box={box} short={short} onMove={onMoveLabel} />
+    <LabelBadge key={label.id} label={label} card={a} box={box} short={short} onMove={onMoveLabel} />
   ))
   const texture = textureLayer(a.texture)
 

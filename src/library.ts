@@ -10,6 +10,7 @@ import {
   type Artwork,
   type IconDef,
   type Label,
+  type LabelBackground,
 } from './model'
 import { parseArtwork, serializeSvg } from './svg'
 
@@ -83,6 +84,13 @@ export function hydrate(payload: LibraryPayload): IconDef[] {
   return icons
 }
 
+/** The background of a component an older build wrote as a yes or no. */
+function labelBackground(value: boolean | LabelBackground | undefined): LabelBackground {
+  if (value === true) return 'Solid'
+  if (value === false) return 'None'
+  return value ?? DEFAULT_LABEL.background
+}
+
 /** Fills in fields a catalogue written by an older build would not have. */
 function normaliseAppearance(value: (Partial<Appearance> & { label?: Omit<Label, 'id'> }) | undefined): Appearance {
   // An older build wrote one label outside the list; it comes back as the first component.
@@ -95,6 +103,7 @@ function normaliseAppearance(value: (Partial<Appearance> & { label?: Omit<Label,
     labels: components.map((component, index) => ({
       ...DEFAULT_LABEL,
       ...component,
+      background: labelBackground(component.background as boolean | LabelBackground | undefined),
       id: component.id ?? `label-${index + 1}`,
     })),
     background: rest.background ?? 'Plain',
