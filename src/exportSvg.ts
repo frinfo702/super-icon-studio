@@ -214,6 +214,8 @@ export function buildIconSvg(
   size: number,
   /** Sizes the canvas around the drawing, at `coverage` of it, instead of the drawing itself. */
   canvas?: { size: number; coverage: number },
+  /** `all` draws the icon; `card` and `glyph` draw one side of it, on the same canvas. */
+  layer: 'all' | 'card' | 'glyph' = 'all',
 ): string | null {
   // The template guides are an overlay in the same card, so the glyph is the other svg.
   const source = document.querySelector(`[data-icon="${icon.id}"] svg:not([data-guide])`)
@@ -265,17 +267,9 @@ export function buildIconSvg(
   const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
   const label = labelMarkup(a.label, box, ring, short)
 
-  return [
-    `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
-    `<title>${icon.name}</title>`,
-    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
-    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
-    texture.defs,
-    guides.defs,
-    glass?.defs ?? '',
-    glyphGlass,
-    peel?.defs ?? '',
-    `</defs>`,
+  // The two sides of the icon: what the card carries, and what sits over it. A layer export
+  // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
+  const surface = [
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
     card,
@@ -283,11 +277,35 @@ export function buildIconSvg(
     texture.layers,
     guides.layers,
     glass?.layers ?? '',
-    glyph.outerHTML,
     peel?.layers ?? '',
-    label,
+  ]
+  const over = [glyph.outerHTML, label].filter(Boolean)
+
+  return [
+    `<svg xmlns="http://www.w3.org/2000/svg" ${canvasAttributes(canvas, totalWidth, totalHeight)}>`,
+    `<title>${icon.name}${layer === 'all' ? '' : ` (${layer})`}</title>`,
+    `<defs>${gradientMarkup(a.gradient, short, ring)}`,
+    `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
+    texture.defs,
+    guides.defs,
+    glass?.defs ?? '',
+    peel?.defs ?? '',
+    glyphGlass,
+    `</defs>`,
+    ...(layer === 'glyph' ? [] : surface),
+    ...(layer === 'card' ? [] : over),
     `</svg>`,
   ].join('')
+}
+
+/**
+ * The two files an app icon is layered from: the card, and what sits over it, on the canvas
+ * and at the coverage a macOS icon uses, so a tool can stack them into one icon.
+ */
+export function buildIconLayers(icon: IconDef, mode: Mode) {
+  const build = (layer: 'card' | 'glyph') =>
+    buildIconSvg(icon, mode, ICON_COMPOSER.card, ICON_COMPOSER, layer)
+  return { card: build('card'), glyph: build('glyph') }
 }
 
 export function downloadSvg(filename: string, markup: string) {

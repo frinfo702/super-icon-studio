@@ -1,6 +1,7 @@
 import {
   AppWindow,
   Download,
+  Layers,
   Grid2x2,
   LayoutGrid,
   Moon,
@@ -16,7 +17,7 @@ import {
 import { useEffect, useMemo, useState } from 'react'
 import { Segmented, ToolButton } from './components/rows'
 import { ICONS, blankIcon } from './data/icons'
-import { ICON_COMPOSER, buildIconSvg, downloadSvg } from './exportSvg'
+import { ICON_COMPOSER, buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
 import {
   DEFAULT_METRICS,
@@ -173,6 +174,14 @@ export default function App() {
       : buildIconSvg(selected, mode, size)
     const suffix = forIconComposer ? `-${ICON_COMPOSER.size}` : ''
     if (markup) downloadSvg(`${selected.identifier || selected.name}-${mode}${suffix}.svg`, markup)
+  }
+
+  const exportSvgLayers = () => {
+    if (!selected) return
+    const { card, glyph } = buildIconLayers(selected, mode)
+    const base = `${selected.identifier || selected.name}-${mode}`
+    if (card) downloadSvg(`${base}-card.svg`, card)
+    if (glyph) downloadSvg(`${base}-glyph.svg`, glyph)
   }
 
   const save = async () => {
@@ -360,6 +369,14 @@ export default function App() {
                         <AppWindow size={15} />
                       </ToolButton>
                     </>
+                  ) : null}
+                  {studio ? (
+                    <ToolButton
+                      title={`Export ${selected?.identifier ?? 'icon'} as two layers (card and glyph)`}
+                      onClick={exportSvgLayers}
+                    >
+                      <Layers size={15} />
+                    </ToolButton>
                   ) : null}
                   <ToolButton
                     title="Toggle inspector"
