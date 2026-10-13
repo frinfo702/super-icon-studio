@@ -1,5 +1,6 @@
 import {
   BLUEPRINT,
+  GLASS,
   METAL_BANDS,
   cardBox,
   cardRadius,
@@ -55,7 +56,7 @@ function textureMarkup(texture: Texture, box: { width: number; height: number },
  * is scaled to cover the card and centred, then clipped to its outline.
  */
 function guideMarkup(a: Appearance, box: { width: number; height: number }, ring: number, radius: number) {
-  if (a.background === 'Plain') return { defs: '', layers: '' }
+  if (a.background !== 'Grid' && a.background !== 'Blueprint') return { defs: '', layers: '' }
 
   const { inset, radius: corner, grid, circles, stroke, opacity } = BLUEPRINT
   const edge = 100 - inset
@@ -109,6 +110,24 @@ function gradientMarkup(g: Gradient, size: number, offset: number) {
   return `<radialGradient id="finish" gradientUnits="userSpaceOnUse" cx="${offset + cx}" cy="${offset + cy}" r="${rx}" gradientTransform="${transform}">${stops}</radialGradient>`
 }
 
+/** The glass surface, as SVG gradients the way the preview draws them in CSS. */
+function glassMarkup(box: { width: number; height: number }, ring: number, radius: number) {
+  const face = `x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}"`
+  const gradient = (id: string, x1: string, y1: string, x2: string, y2: string, table: [string, string, number][]) =>
+    `<linearGradient id="${id}" x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}">${table
+      .map(([offset, colour, alpha]) => `<stop offset="${offset}" stop-color="${colour}" stop-opacity="${alpha}"/>`)
+      .join('')}</linearGradient>`
+
+  return {
+    defs: [
+      gradient('glassWash', '0%', '0%', '100%', '100%', GLASS.wash),
+      gradient('glassEdge', '0%', '0%', '0%', '100%', GLASS.edge),
+      `<clipPath id="glassClip"><rect ${face}/></clipPath>`,
+    ].join(''),
+    layers: `<g clip-path="url(#glassClip)"><rect ${face} fill="url(#glassWash)"/><rect ${face} fill="url(#glassEdge)"/></g>`,
+  }
+}
+
 /**
  * Writes the finished icon — highlight ring, card, finish and glyph — as a standalone SVG.
  * The glyph is cloned out of the live DOM, so custom imports and bundled glyphs both export
@@ -131,19 +150,37 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
   const shadow = short * 0.045
 
   const glyph = source.cloneNode(true) as SVGSVGElement
+  // The clone carries the preview's CSS filter, which would win over the SVG one below.
+  glyph.removeAttribute('style')
   glyph.setAttribute('width', String(glyphSize))
   glyph.setAttribute('height', String(glyphSize))
   glyph.setAttribute('x', String((totalWidth - glyphSize) / 2))
   glyph.setAttribute('y', String((totalHeight - glyphSize) / 2))
+  const unit = short / 72
   glyph.setAttribute('color', a.glyph)
   for (const path of glyph.querySelectorAll('path')) {
     if (path.getAttribute('stroke') !== 'none') path.setAttribute('stroke', a.glyph)
+  }
+
+  // Glass glyphs carry a rim light along their top and a shadow under them; the preview
+  // draws the same two drops with CSS filters.
+  let glyphGlass = ''
+  if (a.glyphGlass) {
+    glyph.setAttribute('opacity', String(GLASS.glyphOpacity))
+    glyph.setAttribute('filter', 'url(#glassGlyph)')
+    glyphGlass = [
+      `<filter id="glassGlyph" x="-25%" y="-25%" width="150%" height="150%">`,
+      `<feDropShadow dx="0" dy="${svgNumber(GLASS.glyphRim.dy * unit)}" stdDeviation="${svgNumber(GLASS.glyphRim.blur * unit)}" flood-color="#FFFFFF" flood-opacity="${GLASS.glyphRim.opacity}"/>`,
+      `<feDropShadow dx="0" dy="${svgNumber(GLASS.glyphShadow.dy * unit)}" stdDeviation="${svgNumber(GLASS.glyphShadow.blur * unit)}" flood-color="#000000" flood-opacity="${GLASS.glyphShadow.opacity}"/>`,
+      `</filter>`,
+    ].join('')
   }
 
   const card = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${a.card}"/>`
   const finish = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="url(#finish)"/>`
   const texture = textureMarkup(a.texture, box, ring, radius, short)
   const guides = guideMarkup(a, box, ring, radius)
+  const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
@@ -152,6 +189,8 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
     texture.defs,
     guides.defs,
+    glass?.defs ?? '',
+    glyphGlass,
     `</defs>`,
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
@@ -159,6 +198,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
     finish,
     texture.layers,
     guides.layers,
+    glass?.layers ?? '',
     glyph.outerHTML,
     `</svg>`,
   ].join('')
