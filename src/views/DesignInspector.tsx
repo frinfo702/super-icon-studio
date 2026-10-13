@@ -269,7 +269,8 @@ export function DesignInspector({
 
           {tab === 'card' ? (
             <>
-              <ColorRow label="Color" value={a.card} onChange={(card) => onPatchAppearance({ card })} />
+              <ColorRow label="Card" value={a.card} onChange={(card) => onPatchAppearance({ card })} />
+              <ColorRow label="Glyph" value={a.glyph} onChange={(glyph) => onPatchAppearance({ glyph })} />
               <SelectRow
                 label="Background"
                 value={a.background}

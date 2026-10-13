@@ -1,14 +1,13 @@
 import { Footer } from '../components/Footer'
 import { Glyph, IconCard } from '../components/IconCard'
-import { ColorRow, Group, Section, TextRow } from '../components/rows'
-import type { Appearance, IconDef, Mode } from '../model'
+import { Group, Section, TextRow } from '../components/rows'
+import type { IconDef, Mode } from '../model'
 
 type Props = {
   icon: IconDef | undefined
   mode: Mode
   dirty: boolean
   onPatch: (patch: Partial<IconDef>) => void
-  onPatchAppearance: (patch: Partial<Appearance>) => void
   onReplaceSvg: () => void
   onDelete: () => void
   onRevert: () => void
@@ -20,7 +19,6 @@ export function LibraryInspector({
   mode,
   dirty,
   onPatch,
-  onPatchAppearance,
   onReplaceSvg,
   onDelete,
   onRevert,
@@ -29,12 +27,10 @@ export function LibraryInspector({
   if (!icon) {
     return (
       <div className="grid flex-1 place-items-center px-8 text-center text-[12px] leading-relaxed text-neutral-400 dark:text-neutral-500">
-        Select an icon in Library to inspect its glyph and colors.
+        Select an icon in Library to inspect its glyph and artwork.
       </div>
     )
   }
-
-  const a = icon[mode]
 
   return (
     <>
@@ -78,12 +74,6 @@ export function LibraryInspector({
               </button>
             ) : null}
           </div>
-        </Group>
-
-        <Section title="Colors" />
-        <Group>
-          <ColorRow label="Card" value={a.card} onChange={(card) => onPatchAppearance({ card })} />
-          <ColorRow label="Glyph" value={a.glyph} onChange={(glyph) => onPatchAppearance({ glyph })} />
         </Group>
       </div>
 
