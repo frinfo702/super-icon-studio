@@ -1,4 +1,4 @@
-import { ChevronsUpDown } from 'lucide-react'
+import { ChevronsUpDown, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { Footer } from '../components/Footer'
 import { IconCard } from '../components/IconCard'
@@ -8,6 +8,10 @@ import {
   DEFAULT_LABEL,
   DEFAULT_METRICS,
   GRADIENT_STYLES,
+  LABEL_BACKGROUNDS,
+  LABEL_PLACEHOLDER,
+  LABEL_RANGE,
+  LABEL_SHAPES,
   SHAPES,
   SIZE_PRESETS,
   TEXTURES,
@@ -16,6 +20,7 @@ import {
   type BlendMode,
   type GradientStyle,
   type IconDef,
+  type Label,
   type Mode,
 } from '../model'
 import {
@@ -29,9 +34,11 @@ import {
   ToggleRow,
 } from '../components/rows'
 
-export type DesignTab = 'size' | 'gradient' | 'highlight' | 'card'
+/** The panels the card itself carries, plus one per component the icon has been given. */
+export type DesignTab = DesignSection | `label:${string}`
+type DesignSection = 'size' | 'gradient' | 'highlight' | 'card'
 
-const TAB_TITLES: Record<DesignTab, string> = {
+const TAB_TITLES: Record<DesignSection, string> = {
   size: 'Size',
   gradient: 'Gradient',
   highlight: 'Highlight',
@@ -44,7 +51,7 @@ const tabIcon = (children: React.ReactNode) => (
   </svg>
 )
 
-const TAB_ICONS: Record<DesignTab, React.ReactNode> = {
+const TAB_ICONS: Record<DesignSection, React.ReactNode> = {
   size: tabIcon(
     <rect x="1.5" y="5" width="12" height="5" rx="2.5" stroke="currentColor" strokeWidth="1.4" />,
   ),
@@ -71,6 +78,9 @@ type Props = {
   onPresetChange: (id: string) => void
   onPatch: (patch: Partial<IconDef>) => void
   onPatchAppearance: (patch: Partial<Appearance>) => void
+  onAddLabel: () => void
+  onPatchLabel: (id: string, patch: Partial<Label>) => void
+  onRemoveLabel: (id: string) => void
   onReset: () => void
   onRevert: () => void
   onSave: () => void
@@ -86,6 +96,9 @@ export function DesignInspector({
   onPresetChange,
   onPatch,
   onPatchAppearance,
+  onAddLabel,
+  onPatchLabel,
+  onRemoveLabel,
   onReset,
   onRevert,
   onSave,
@@ -97,6 +110,10 @@ export function DesignInspector({
   const highlight = a.highlight
   const defaults = defaultFinish(mode)
   const [confirmingReset, setConfirmingReset] = useState(false)
+  // A component tab names its component; a card panel is what is left when there is no such one.
+  const label = tab.startsWith('label:') ? a.labels.find((entry) => `label:${entry.id}` === tab) : undefined
+  const showCard = tab === 'card' || (tab.startsWith('label:') && !label)
+  const modeName = `${mode === 'light' ? 'Light' : 'Dark'} Mode`
 
   return (
     <>
@@ -115,18 +132,43 @@ export function DesignInspector({
           </div>
         </div>
 
-        <div className="px-3 pb-3 pt-1">
-          <Segmented
-            value={tab}
-            onChange={onTabChange}
-            options={(Object.keys(TAB_TITLES) as DesignTab[]).map((value) => ({
-              value,
-              icon: TAB_ICONS[value],
-            }))}
-          />
+        <div className="flex items-center gap-1.5 px-3 pb-3 pt-1">
+          <div className="min-w-0 flex-1 overflow-x-auto">
+            <Segmented
+              value={tab}
+              onChange={onTabChange}
+              options={[
+                ...(Object.keys(TAB_TITLES) as DesignSection[]).map((value) => ({
+                  value: value as DesignTab,
+                  icon: TAB_ICONS[value],
+                })),
+                ...a.labels.map((component) => ({
+                  value: `label:${component.id}` as DesignTab,
+                  icon: (
+                    <span className="inline-block max-w-[26px] truncate text-[10px] font-medium">
+                      {component.text.trim() || 'Text'}
+                    </span>
+                  ),
+                  title: component.text.trim() || 'Text component',
+                })),
+              ]}
+            />
+          </div>
+          <button
+            type="button"
+            title="Add a component"
+            aria-label="Add a component"
+            onClick={onAddLabel}
+            className="grid size-[28px] shrink-0 place-items-center rounded-[9px] bg-black/[0.06] text-neutral-600 hover:bg-black/[0.1] dark:bg-white/[0.1] dark:text-neutral-300 dark:hover:bg-white/[0.16]"
+          >
+            <Plus size={13} />
+          </button>
         </div>
 
-        <Section title={TAB_TITLES[tab]} hint={tab === 'size' ? undefined : `${mode === 'light' ? 'Light' : 'Dark'} Mode`} />
+        <Section
+          title={label ? 'Text' : showCard ? TAB_TITLES.card : TAB_TITLES[tab as DesignSection]}
+          hint={tab === 'size' ? undefined : modeName}
+        />
 
         <Group>
           {tab === 'size' ? (
@@ -267,7 +309,7 @@ export function DesignInspector({
             </>
           ) : null}
 
-          {tab === 'card' ? (
+          {showCard ? (
             <>
               <ColorRow label="Card" value={a.card} onChange={(card) => onPatchAppearance({ card })} />
               <ColorRow label="Glyph" value={a.glyph} onChange={(glyph) => onPatchAppearance({ glyph })} />
@@ -291,32 +333,107 @@ export function DesignInspector({
                 def={false}
                 onChange={(glyphGlass) => onPatchAppearance({ glyphGlass })}
               />
-
-              <Section title="Label" />
-              <TextRow
-                label="Text"
-                value={a.label.text}
-                placeholder="BETA"
-                onChange={(text) => onPatchAppearance({ label: { ...a.label, text } })}
-              />
-              <ColorRow
-                label="Text color"
-                value={a.label.color}
-                def={DEFAULT_LABEL.color}
-                onChange={(color) => onPatchAppearance({ label: { ...a.label, color } })}
-              />
-              <ColorRow
-                label="Pill"
-                value={a.label.fill}
-                def={DEFAULT_LABEL.fill}
-                onChange={(fill) => onPatchAppearance({ label: { ...a.label, fill } })}
-              />
             </>
           ) : null}
         </Group>
 
+        {label ? (
+          <>
+            <Group>
+              <TextRow
+                label="Text"
+                value={label.text}
+                placeholder={LABEL_PLACEHOLDER}
+                onChange={(text) => onPatchLabel(label.id, { text })}
+              />
+              <SliderRow
+                label="Font size"
+                value={label.size}
+                min={5}
+                max={40}
+                def={DEFAULT_LABEL.size}
+                onChange={(size) => onPatchLabel(label.id, { size })}
+              />
+              <ColorRow
+                label="Color"
+                value={label.color}
+                def={DEFAULT_LABEL.color}
+                onChange={(color) => onPatchLabel(label.id, { color })}
+              />
+            </Group>
+
+            <Section title="Background" />
+            <Group>
+              <SelectRow
+                label="Background"
+                value={label.background ? 'Solid' : 'None'}
+                options={LABEL_BACKGROUNDS}
+                onChange={(background) => onPatchLabel(label.id, { background: background === 'Solid' })}
+              />
+              {label.background ? (
+                <ColorRow
+                  label="Fill"
+                  value={label.fill}
+                  def={DEFAULT_LABEL.fill}
+                  onChange={(fill) => onPatchLabel(label.id, { fill })}
+                />
+              ) : null}
+            </Group>
+
+            <Section title="Shape" />
+            <Group>
+              <SelectRow
+                label="Shape"
+                value={label.shape}
+                options={LABEL_SHAPES}
+                def={DEFAULT_LABEL.shape}
+                onChange={(shape) => onPatchLabel(label.id, { shape })}
+              />
+              {label.shape === 'Rounded' ? (
+                <SliderRow
+                  label="Corner radius"
+                  value={label.radius}
+                  min={0}
+                  max={50}
+                  def={DEFAULT_LABEL.radius}
+                  onChange={(radius) => onPatchLabel(label.id, { radius })}
+                />
+              ) : null}
+            </Group>
+
+            <Section title="Placement" hint="Drag it on the card too" />
+            <Group>
+              <SliderRow
+                label="X"
+                value={label.x}
+                min={-LABEL_RANGE}
+                max={LABEL_RANGE}
+                def={DEFAULT_LABEL.x}
+                onChange={(x) => onPatchLabel(label.id, { x })}
+              />
+              <SliderRow
+                label="Y"
+                value={label.y}
+                min={-LABEL_RANGE}
+                max={LABEL_RANGE}
+                def={DEFAULT_LABEL.y}
+                onChange={(y) => onPatchLabel(label.id, { y })}
+              />
+            </Group>
+          </>
+        ) : null}
+
         <div className="px-3 pt-2">
-          {confirmingReset ? (
+          {label ? (
+            <button
+              type="button"
+              title="Take this component off the icon"
+              onClick={() => onRemoveLabel(label.id)}
+              className="h-7 w-full rounded-md bg-black/[0.05] text-[12px] text-neutral-700 hover:bg-black/[0.09] dark:bg-white/[0.1] dark:text-neutral-200"
+            >
+              Remove component
+            </button>
+          ) : confirmingReset ? (
             <div className="flex flex-col gap-1.5">
               <p className="px-0.5 text-[11px] leading-snug text-neutral-500 dark:text-neutral-400">
                 Size, gradient and highlight go back to their defaults.

@@ -12,7 +12,7 @@ pnpm install
 pnpm dev      # http://localhost:5173
 pnpm build    # type-check + production bundle
 pnpm lint     # oxlint
-pnpm check    # asserts for the SVG importer and the deck layout
+pnpm check    # asserts for the SVG importer, the deck layout, the path editor and the components
 ```
 
 ## The icon library is a folder
@@ -68,7 +68,9 @@ inspector has four panels: **Size** (size preset, shape, glyph scale, corner rad
 corner), **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour,
 opacity, blend mode, blur), and **Card** (card and glyph colours, background, texture).
 Gradient, Highlight, Card and texture are stored per appearance, so light and dark are tuned
-separately; the sun/moon switch in the toolbar swaps between them for the whole window.
+separately; the sun/moon switch in the toolbar swaps between them for the whole window. The
+`+` beside the panels adds a component to the icon, and each component gets a panel of its
+own next to the four.
 
 **Background** draws under the card's colour: Plain, Grid, or Blueprint, the grid and
 construction circles an app-icon template shows — in the glyph's colour, so the drawing
@@ -89,10 +91,17 @@ the drawing itself moves it in the card, and the corner handles size it. A shape
 written into the path, so it saves and exports with the icon; the move and the size are
 metrics, stored with the rest of the icon's settings.
 
-**Label**, under the card, stamps a line of text over the icon in a pill — the badge a build
-reads. Text colour and pill colour are per appearance, and the pill's size follows the card,
-so the same label reads at 16 points and at 512. It exports as a real element: a tool that
-opens the SVG needs a font from the stack, so outline the text there if it has to travel.
+**Components** are the pieces drawn over the card. The `+` beside the panels adds a text
+component — a line of text in a badge, the badge a build reads — and the component's tab
+holds everything about it: the text, the font size, the two colours, the background (its
+fill, or nothing but letters), the shape (Pill, Rounded with a corner radius, or Square), and
+its place. Size and place are shares of the card's short side, so one component reads the same
+at 16 points and at 512. A component can be dragged about the hero preview instead of dialled
+in, and the drag reports the same offsets the X and Y rows hold; `Remove component` takes it
+off the icon. A new component lands in both appearances at once and then takes their colours
+separately, so light and dark draw the same set of them. Components export as real elements: a
+tool that opens the SVG needs a font from the stack, so outline the text there if it has to
+travel.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
@@ -132,7 +141,10 @@ depth changes. The maths is covered by `scripts/check-group.ts`.
 `src/components/IconCard.tsx` draws a card from its appearance: the base colour, a radial
 or linear or conic gradient layer blended over it, a highlight ring around the edge, an
 inset vignette, and a drop shadow. Everything scales from the requested size, so the 12pt
-and 48pt tiles in the ladder are the same code path as the hero preview.
+and 48pt tiles in the ladder are the same code path as the hero preview. Its components draw
+in the same card units, so a badge sits where the same share of the short side puts it
+whatever the size; `labelBox` in `src/model.ts` works that box out, and the preview and the
+exporter both measure against it. The maths is covered by `scripts/check-label.ts`.
 
 Anything that draws a frame around an icon goes through `src/components/IconFrame.tsx`,
 which sizes the frame from the icon's own reach — the highlight ring plus the drop shadow —

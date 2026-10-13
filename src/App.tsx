@@ -20,12 +20,17 @@ import { ICONS, blankIcon } from './data/icons'
 import { ICON_COMPOSER, buildIconLayers, buildIconSvg, downloadSvg } from './exportSvg'
 import { DEFAULT_GROUP, type IconGroup } from './group'
 import {
+  DEFAULT_LABEL,
   DEFAULT_METRICS,
+  LABEL_PLACEHOLDER,
+  LABEL_RANGE,
   SIZE_PRESETS,
   defaultFinish,
+  nextLabelId,
   zoomFor,
   type Appearance,
   type IconDef,
+  type Label,
   type Metrics,
   type Mode,
 } from './model'
@@ -150,6 +155,41 @@ export default function App() {
   const editMetrics = (patch: Partial<Metrics>) => {
     if (!selected) return
     patchIcon({ metrics: { ...selected.metrics, ...patch } })
+  }
+
+  /**
+   * A new component lands in both appearances at once: light and dark keep their own colours,
+   * but they draw the same set of components.
+   */
+  const addLabel = () => {
+    if (!selected) return
+    const label = { ...DEFAULT_LABEL, id: nextLabelId(selected), text: LABEL_PLACEHOLDER }
+    const add = (appearance: Appearance) => ({ ...appearance, labels: [...appearance.labels, { ...label }] })
+    patchIcon({ light: add(selected.light), dark: add(selected.dark) })
+    setTab(`label:${label.id}`)
+  }
+
+  const patchLabel = (id: string, patch: Partial<Label>) => {
+    if (!selected) return
+    patchAppearance({
+      labels: selected[mode].labels.map((label) => (label.id === id ? { ...label, ...patch } : label)),
+    })
+  }
+
+  /** A drag on the card reports the offsets the inspector's sliders hold, kept in their range. */
+  const moveLabel = (id: string, x: number, y: number) => {
+    const keep = (value: number) => Math.min(Math.max(value, -LABEL_RANGE), LABEL_RANGE)
+    patchLabel(id, { x: keep(x), y: keep(y) })
+  }
+
+  const removeLabel = (id: string) => {
+    if (!selected) return
+    const drop = (list: Label[]) => list.filter((label) => label.id !== id)
+    patchIcon({
+      light: { ...selected.light, labels: drop(selected.light.labels) },
+      dark: { ...selected.dark, labels: drop(selected.dark.labels) },
+    })
+    setTab('card')
   }
 
   const replaceSvg = () => {
@@ -289,6 +329,7 @@ export default function App() {
                     editing={editPoints}
                     onEditPoint={editArtworkPoint}
                     onEditMetrics={editMetrics}
+                    onMoveLabel={moveLabel}
                     onSizeChange={changeSize}
                   />
                 )}
@@ -450,6 +491,9 @@ export default function App() {
                     onPresetChange={changePreset}
                     onPatch={patchIcon}
                     onPatchAppearance={patchAppearance}
+                    onAddLabel={addLabel}
+                    onPatchLabel={patchLabel}
+                    onRemoveLabel={removeLabel}
                     onReset={resetDesign}
                     onRevert={revert}
                     onSave={save}

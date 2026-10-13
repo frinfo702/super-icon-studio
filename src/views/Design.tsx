@@ -13,6 +13,7 @@ type Props = {
   editing?: boolean
   onEditPoint?: (pathIndex: number, pointIndex: number, x: number, y: number) => void
   onEditMetrics?: (patch: Partial<Metrics>) => void
+  onMoveLabel?: (id: string, x: number, y: number) => void
 }
 
 export function Design({
@@ -26,6 +27,7 @@ export function Design({
   editing,
   onEditPoint,
   onEditMetrics,
+  onMoveLabel,
 }: Props) {
   if (!icon) return null
 
@@ -59,6 +61,7 @@ export function Design({
           editing={editing}
           onEditPoint={onEditPoint}
           onEditMetrics={onEditMetrics}
+          onMoveLabel={onMoveLabel}
         />
       </div>
       <div className="overflow-x-auto pb-16 pt-2">

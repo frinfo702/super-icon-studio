@@ -2,12 +2,13 @@ import { mixHex } from './color'
 import {
   BLUEPRINT,
   GLASS,
-  LABEL,
+  LABEL_PADDING,
   METAL_BANDS,
   PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
+  labelBox,
   type Appearance,
   type Label,
   type Gradient,
@@ -179,26 +180,24 @@ function peelMarkup(card: string, box: { width: number; height: number }, ring: 
 }
 
 /**
- * The label badge, measured with the canvas the preview would use, so the pill fits the text
- * the same way on screen and in the file.
+ * The components' badges, measured with the canvas the preview would use, so a badge fits its
+ * text the same way on screen and in the file.
  */
 function labelMarkup(label: Label, box: { width: number; height: number }, ring: number, short: number) {
   const text = label.text.trim()
   if (!text) return ''
 
-  const fontSize = short * LABEL.size
-  const font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif`
+  const { fontSize, height, radius, cx, cy } = labelBox(label, box, short)
   const context = document.createElement('canvas').getContext('2d')
-  context!.font = font
-  const width = Math.min(box.width * 0.92, context!.measureText(text).width + fontSize * 2 * (LABEL.padding + 0.15))
-  const height = fontSize * (1 + LABEL.padding)
-  const x = ring + box.width / 2 - width / 2
-  const y = ring + box.height - short * LABEL.bottom - height
+  context!.font = `600 ${fontSize}px -apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif`
+  const width = Math.min(box.width * 0.92, context!.measureText(text).width + fontSize * 2 * (LABEL_PADDING + 0.15))
   const escaped = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   return [
-    `<rect x="${svgNumber(x)}" y="${svgNumber(y)}" width="${svgNumber(width)}" height="${svgNumber(height)}" rx="${svgNumber(height / 2)}" fill="${label.fill}"/>`,
-    `<text x="${svgNumber(ring + box.width / 2)}" y="${svgNumber(y + height / 2)}" fill="${label.color}" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif" font-size="${svgNumber(fontSize)}" font-weight="600" text-anchor="middle" dominant-baseline="central" letter-spacing="${svgNumber(fontSize * 0.04)}">${escaped}</text>`,
+    label.background
+      ? `<rect x="${svgNumber(ring + cx - width / 2)}" y="${svgNumber(ring + cy - height / 2)}" width="${svgNumber(width)}" height="${svgNumber(height)}" rx="${svgNumber(radius)}" fill="${label.fill}"/>`
+      : '',
+    `<text x="${svgNumber(ring + cx)}" y="${svgNumber(ring + cy)}" fill="${label.color}" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Text', Helvetica Neue, Arial, sans-serif" font-size="${svgNumber(fontSize)}" font-weight="600" text-anchor="middle" dominant-baseline="central" letter-spacing="${svgNumber(fontSize * 0.04)}">${escaped}</text>`,
   ].join('')
 }
 
@@ -265,7 +264,7 @@ export function buildIconSvg(
   const peel = icon.metrics.peel ? peelMarkup(a.card, box, ring, radius, short) : null
   const guides = guideMarkup(a, box, ring, radius)
   const glass = a.background === 'Liquid glass' ? glassMarkup(box, ring, radius) : null
-  const label = labelMarkup(a.label, box, ring, short)
+  const label = a.labels.map((component) => labelMarkup(component, box, ring, short)).join('')
 
   // The two sides of the icon: what the card carries, and what sits over it. A layer export
   // writes them on their own, on the same canvas, so stacking the files rebuilds the icon.
