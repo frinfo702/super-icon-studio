@@ -1,5 +1,7 @@
+import { mixHex } from './color'
 import {
   METAL_BANDS,
+  PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
@@ -76,6 +78,34 @@ function gradientMarkup(g: Gradient, size: number, offset: number) {
 }
 
 /**
+ * The folded corner in the exporter's own coordinates: the fold is an arc centred on the
+ * corner, the flap under it takes the card's underside colours, and a blurred copy of the
+ * shape throws the fold's shadow across the card.
+ */
+function peelMarkup(card: string, box: { width: number; height: number }, ring: number, radius: number, short: number) {
+  const side = short * PEEL.size
+  const x = ring + box.width
+  const y = ring + box.height
+  const ax = svgNumber(x)
+  const ay = svgNumber(y)
+  const fold = `M ${ax} ${svgNumber(y - side)} A ${svgNumber(side)} ${svgNumber(side)} 0 0 0 ${svgNumber(x - side)} ${ay} L ${ax} ${ay} Z`
+  const light = mixHex(card, '#FFFFFF', PEEL.lighten)
+  const dark = mixHex(card, '#000000', PEEL.darken)
+  const blur = short * 0.07
+
+  const defs = [
+    `<clipPath id="peelClip"><rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}"/></clipPath>`,
+    `<linearGradient id="peelFill" gradientUnits="userSpaceOnUse" x1="${svgNumber(x - side)}" y1="${svgNumber(y - side)}" x2="${ax}" y2="${ay}"><stop offset="0" stop-color="${light}"/><stop offset="1" stop-color="${dark}"/></linearGradient>`,
+    `<filter id="peelShadow" x="-30%" y="-30%" width="160%" height="160%"><feDropShadow dx="${svgNumber(-short * 0.02)}" dy="${svgNumber(-short * 0.02)}" stdDeviation="${svgNumber(blur)}" flood-color="#000000" flood-opacity="0.3"/></filter>`,
+  ].join('')
+
+  return {
+    defs,
+    layers: `<g clip-path="url(#peelClip)"><path d="${fold}" fill="${light}" filter="url(#peelShadow)"/><path d="${fold}" fill="url(#peelFill)"/></g>`,
+  }
+}
+
+/**
  * Writes the finished icon — highlight ring, card, finish and glyph — as a standalone SVG.
  * The glyph is cloned out of the live DOM, so custom imports and bundled glyphs both export
  * the same geometry that is on screen. The drop shadow and the inset vignette are drawn here
@@ -108,6 +138,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
   const card = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${a.card}"/>`
   const finish = `<rect x="${ring}" y="${ring}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="url(#finish)"/>`
   const texture = textureMarkup(a.texture, box, ring, radius, short)
+  const peel = icon.metrics.peel ? peelMarkup(a.card, box, ring, radius, short) : null
 
   return [
     `<svg xmlns="http://www.w3.org/2000/svg" width="${box.width}" height="${box.height}" viewBox="0 0 ${totalWidth} ${totalHeight}">`,
@@ -115,6 +146,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
     `<defs>${gradientMarkup(a.gradient, short, ring)}`,
     `<filter id="shadow" x="-25%" y="-25%" width="150%" height="160%"><feDropShadow dx="0" dy="${shadow}" stdDeviation="${shadow}" flood-color="#000000" flood-opacity="0.16"/></filter>`,
     texture.defs,
+    peel?.defs ?? '',
     `</defs>`,
     `<g filter="url(#shadow)">${card}</g>`,
     `<rect x="0" y="0" width="${totalWidth}" height="${totalHeight}" rx="${radius + ring}" ry="${radius + ring}" fill="${a.highlight.color}" fill-opacity="${a.highlight.opacity / 100}"/>`,
@@ -122,6 +154,7 @@ export function buildIconSvg(icon: IconDef, mode: Mode, size: number): string | 
     finish,
     texture.layers,
     glyph.outerHTML,
+    peel?.layers ?? '',
     `</svg>`,
   ].join('')
 }

@@ -1,8 +1,9 @@
-import { hexToRgba } from '../color'
+import { hexToRgba, mixHex } from '../color'
 import { GLYPHS } from '../glyphs'
 import {
   GLYPH_BASE,
   METAL_BANDS,
+  PEEL,
   cardBox,
   cardRadius,
   cardShortSide,
@@ -28,6 +29,27 @@ function textureLayer(texture: Texture) {
     `conic-gradient(from 210deg at 50% 50%, ${bands})`,
     GRAIN,
   ].join(', ')
+}
+
+/**
+ * The corner folded back: a quarter-ellipse anchored to the bottom-right corner, filled with
+ * the underside of the card and casting its shadow across the card along the fold.
+ */
+function peelLayer(card: string, short: number) {
+  const side = short * PEEL.size
+  return (
+    <span
+      aria-hidden
+      className="pointer-events-none absolute bottom-0 right-0"
+      style={{
+        width: side,
+        height: side,
+        borderTopLeftRadius: '100% 100%',
+        background: `linear-gradient(to bottom right, ${mixHex(card, '#FFFFFF', PEEL.lighten)}, ${mixHex(card, '#000000', PEEL.darken)})`,
+        boxShadow: `-${short * 0.02}px -${short * 0.02}px ${short * 0.07}px rgba(0, 0, 0, 0.3)`,
+      }}
+    />
+  )
 }
 
 function gradientLayer(g: Gradient) {
@@ -94,6 +116,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
   const glyphSize = short * GLYPH_BASE * (icon.metrics.glyphScale / 100)
   const highlight = hexToRgba(a.highlight.color, a.highlight.opacity / 100)
   const blur = a.highlight.blur * (short / 72)
+  const peel = icon.metrics.peel ? peelLayer(a.card, short) : null
   const texture = textureLayer(a.texture)
 
   return (
@@ -140,6 +163,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
       >
         <Glyph icon={icon} size={glyphSize} color={a.glyph} />
       </span>
+      {peel}
     </div>
   )
 }

@@ -37,10 +37,18 @@ export type Metrics = {
   glyphScale: number
   cornerRadius: number
   shape: Shape
+  /** A corner folded back, showing the underside of the card. */
+  peel: boolean
 }
 
 export const TEXTURES = ['None', 'Liquid metal'] as const
 export type Texture = (typeof TEXTURES)[number]
+
+/**
+ * The folded corner: how much of the card's short side the flap takes, and how far its
+ * underside runs from the light it catches at the fold to the shadow at the corner.
+ */
+export const PEEL = { size: 0.34, lighten: 0.3, darken: 0.35 }
 
 /**
  * The chrome banding of the liquid metal finish, as offset / colour / alpha. The renderer
@@ -144,7 +152,12 @@ export const DEFAULT_HIGHLIGHT: Highlight = {
   blur: 0,
 }
 
-export const DEFAULT_METRICS: Metrics = { glyphScale: 125, cornerRadius: 30, shape: 'Square' }
+export const DEFAULT_METRICS: Metrics = {
+  glyphScale: 125,
+  cornerRadius: 30,
+  shape: 'Square',
+  peel: false,
+}
 
 /** How much of the card the glyph covers before the glyph scale is applied. */
 export const GLYPH_BASE = 0.44

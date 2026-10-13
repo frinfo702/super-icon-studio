@@ -61,11 +61,16 @@ in the toolbar writes the selected icon out as an SVG. Edits mark the catalogue 
 `Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
-inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius),
+inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius,
+peeled corner),
 **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
 blend mode, blur), and **Card** (base colour, texture). Gradient, Highlight, Card and
 texture are stored per appearance, so light and dark are tuned separately; the sun/moon
 switch in the toolbar swaps between them for the whole window.
+
+**Peeled corner** folds the bottom-right corner back and shows the card's underside, with the
+fold's shadow across the card. Like the shape and the corner radius it is set once, not per
+appearance, and it exports with the icon.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and

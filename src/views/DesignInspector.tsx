@@ -13,7 +13,7 @@ import {
   type IconDef,
   type Mode,
 } from '../model'
-import { ColorRow, Group, Section, Segmented, SelectRow, SliderRow } from '../components/rows'
+import { ColorRow, Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
 
 export type DesignTab = 'size' | 'gradient' | 'highlight' | 'card'
 
@@ -144,6 +144,11 @@ export function DesignInspector({
                   onChange={(cornerRadius) => onPatch({ metrics: { ...icon.metrics, cornerRadius } })}
                 />
               )}
+              <ToggleRow
+                label="Peeled corner"
+                checked={icon.metrics.peel}
+                onChange={(peel) => onPatch({ metrics: { ...icon.metrics, peel } })}
+              />
             </>
           ) : null}
 
