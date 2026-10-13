@@ -153,6 +153,12 @@ export function DesignInspector({
                   onChange={(cornerRadius) => onPatch({ metrics: { ...icon.metrics, cornerRadius } })}
                 />
               )}
+              <ToggleRow
+                label="Peeled corner"
+                checked={icon.metrics.peel}
+                def={false}
+                onChange={(peel) => onPatch({ metrics: { ...icon.metrics, peel } })}
+              />
             </>
           ) : null}
 

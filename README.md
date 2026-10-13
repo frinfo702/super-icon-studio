@@ -64,7 +64,8 @@ Icon Composer wants to open. Edits mark the catalogue as
 `Unsaved`; Revert restores the last saved state and Save commits it.
 
 **Design** — a hero preview of the selected icon, with the size ladder under it. The
-inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius),
+inspector has four panels: **Size** (size preset, shape, glyph scale, corner radius,
+peeled corner),
 **Gradient** (strength, style, blend mode, offsets, size), **Highlight** (colour, opacity,
 blend mode, blur), and **Card** (base colour, background, texture). Gradient, Highlight,
 Card and texture are stored per appearance, so light and dark are tuned separately; the
@@ -78,6 +79,10 @@ a shadow along its bottom one. Whichever you pick exports with the icon.
 **Glass glyph**, next to the texture, gives the glyph the other half of that material: the
 card shows through it, with a rim light along its top and a shadow under it, so it sits in
 the surface rather than on it.
+
+**Peeled corner** folds the bottom-right corner back and shows the card's underside, with the
+fold's shadow across the card. Like the shape and the corner radius it is set once, not per
+appearance, and it exports with the icon.
 
 **Shape** takes the card beyond the square: Square, Wide (4:3), Tall (3:4) and Circle. A
 card keeps its corner radius, glyph and highlight ring in proportion to its short side, and
