@@ -384,7 +384,6 @@ export default function App() {
                     mode={mode}
                     dirty={dirty}
                     onPatch={patchIcon}
-                    onPatchAppearance={patchAppearance}
                     onReplaceSvg={replaceSvg}
                     onDelete={deleteIcon}
                     onRevert={revert}
