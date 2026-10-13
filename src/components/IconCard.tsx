@@ -1,11 +1,13 @@
 import { hexToRgba } from '../color'
 import { GLYPHS } from '../glyphs'
 import {
+  BLUEPRINT,
   GLYPH_BASE,
   METAL_BANDS,
   cardBox,
   cardRadius,
   cardShortSide,
+  type Background,
   type Gradient,
   type IconDef,
   type Mode,
@@ -30,8 +32,41 @@ function textureLayer(texture: Texture) {
   ].join(', ')
 }
 
-function gradientLayer(g: Gradient) {
-  const alpha = Math.min(1, g.strength / 100) * 0.35
+/** The guides an app-icon template draws, as an overlay in the glyph colour. */
+function guideLayer(background: Background, glyph: string) {
+  if (background === 'Plain') return null
+  const { inset, radius, grid, circles, stroke, opacity } = BLUEPRINT
+  const edge = 100 - inset
+
+  return (
+    <svg
+      aria-hidden
+      data-guide
+      viewBox="0 0 100 100"
+      preserveAspectRatio="xMidYMid slice"
+      className="pointer-events-none absolute inset-0 h-full w-full"
+      fill="none"
+      stroke={glyph}
+      strokeWidth={stroke}
+      strokeOpacity={opacity}
+    >
+      {background === 'Blueprint' ? (
+        <>
+          <rect x={inset} y={inset} width={edge - inset} height={edge - inset} rx={radius} />
+          {circles.map((r) => (
+            <circle key={r} cx="50" cy="50" r={r} />
+          ))}
+          <path d={`M${inset} ${inset} L${edge} ${edge} M${edge} ${inset} L${inset} ${edge}`} />
+        </>
+      ) : null}
+      {grid.map((v) => (
+        <path key={v} d={`M${v} ${inset} L${v} ${edge} M${inset} ${v} L${edge} ${v}`} />
+      ))}
+    </svg>
+  )
+}
+
+function gradientLayer(g: Gradient) {  const alpha = Math.min(1, g.strength / 100) * 0.35
   const stop = `rgba(255,255,255,${alpha})`
   const x = 50 + g.offsetX
   const y = 50 + g.offsetY
@@ -94,6 +129,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
   const glyphSize = short * GLYPH_BASE * (icon.metrics.glyphScale / 100)
   const highlight = hexToRgba(a.highlight.color, a.highlight.opacity / 100)
   const blur = a.highlight.blur * (short / 72)
+  const guides = guideLayer(a.background, a.glyph)
   const texture = textureLayer(a.texture)
 
   return (
@@ -118,6 +154,7 @@ export function IconCard({ icon, mode, size, className = '', glyphShift }: Props
           .join(', '),
       }}
     >
+      {guides}
       {texture ? (
         <span
           aria-hidden

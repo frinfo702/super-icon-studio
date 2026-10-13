@@ -5,6 +5,7 @@ import { Footer } from '../components/Footer'
 import { Group, Section, Segmented, SelectRow, SliderRow, ToggleRow } from '../components/rows'
 import {
   ANIMATION_STYLES,
+  DEFAULT_GROUP,
   EASINGS,
   GROUP_LAYOUTS,
   layoutGroup,
@@ -370,44 +371,71 @@ export function ComposerInspector({
               <SelectRow
                 label="Direction"
                 value={group.layout}
+                def={DEFAULT_GROUP.layout}
                 options={GROUP_LAYOUTS}
                 onChange={(layout) => onPatch({ layout })}
               />
               <ToggleRow
                 label="Automatic gap"
                 checked={group.autoGap}
+                def={DEFAULT_GROUP.autoGap}
                 onChange={(autoGap) => onPatch({ autoGap })}
               />
               {group.autoGap ? null : (
                 <>
-                  <SliderRow label="Amount" value={group.gap} min={0} max={100} onChange={(gap) => onPatch({ gap })} />
+                  <SliderRow
+                    label="Amount"
+                    value={group.gap}
+                    min={0}
+                    max={100}
+                    def={DEFAULT_GROUP.gap}
+                    onChange={(gap) => onPatch({ gap })}
+                  />
                 </>
               )}
-              <ToggleRow label="Scale" checked={group.scale} onChange={(scale) => onPatch({ scale })} />
+              <ToggleRow
+                label="Scale"
+                checked={group.scale}
+                def={DEFAULT_GROUP.scale}
+                onChange={(scale) => onPatch({ scale })}
+              />
               <SliderRow
                 label="Amount"
                 value={group.scaleAmount}
                 min={0}
                 max={40}
+                def={DEFAULT_GROUP.scaleAmount}
                 decimals={0}
                 onChange={(scaleAmount) => onPatch({ scaleAmount })}
               />
-              <ToggleRow label="Rotate" checked={group.rotate} onChange={(rotate) => onPatch({ rotate })} />
+              <ToggleRow
+                label="Rotate"
+                checked={group.rotate}
+                def={DEFAULT_GROUP.rotate}
+                onChange={(rotate) => onPatch({ rotate })}
+              />
               <SliderRow
                 label="Amount"
                 value={group.rotateAmount}
                 min={0}
                 max={30}
+                def={DEFAULT_GROUP.rotateAmount}
                 decimals={0}
                 suffix="°"
                 onChange={(rotateAmount) => onPatch({ rotateAmount })}
               />
-              <ToggleRow label={vertical ? 'X offset' : 'Y offset'} checked={group.offset} onChange={(offset) => onPatch({ offset })} />
+              <ToggleRow
+                label={vertical ? 'X offset' : 'Y offset'}
+                checked={group.offset}
+                def={DEFAULT_GROUP.offset}
+                onChange={(offset) => onPatch({ offset })}
+              />
               <SliderRow
                 label="Amount"
                 value={group.offsetAmount}
                 min={-50}
                 max={50}
+                def={DEFAULT_GROUP.offsetAmount}
                 onChange={(offsetAmount) => onPatch({ offsetAmount })}
               />
             </Group>
@@ -417,11 +445,13 @@ export function ComposerInspector({
               <ToggleRow
                 label="Reserve empty slots"
                 checked={group.reserveSlots}
+                def={DEFAULT_GROUP.reserveSlots}
                 onChange={(reserveSlots) => onPatch({ reserveSlots })}
               />
               <ToggleRow
                 label="Glyph offset"
                 checked={group.glyphOffset}
+                def={DEFAULT_GROUP.glyphOffset}
                 onChange={(glyphOffset) => onPatch({ glyphOffset })}
               />
               <SliderRow
@@ -429,6 +459,7 @@ export function ComposerInspector({
                 value={group.glyphOffsetAmount}
                 min={0}
                 max={60}
+                def={DEFAULT_GROUP.glyphOffsetAmount}
                 onChange={(glyphOffsetAmount) => onPatch({ glyphOffsetAmount })}
               />
             </Group>
@@ -442,6 +473,7 @@ export function ComposerInspector({
                 value={group.animation.duration}
                 min={0.1}
                 max={1.2}
+                def={DEFAULT_GROUP.animation.duration}
                 step={0.05}
                 decimals={2}
                 suffix="s"
@@ -452,6 +484,7 @@ export function ComposerInspector({
                 value={group.animation.stagger}
                 min={0}
                 max={0.3}
+                def={DEFAULT_GROUP.animation.stagger}
                 step={0.01}
                 decimals={2}
                 suffix="s"
@@ -460,6 +493,7 @@ export function ComposerInspector({
               <SelectRow
                 label="Easing"
                 value={group.animation.style}
+                def={DEFAULT_GROUP.animation.style}
                 options={ANIMATION_STYLES}
                 onChange={(style) => onPatch({ animation: { ...group.animation, style } })}
               />
