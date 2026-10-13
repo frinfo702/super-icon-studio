@@ -28,6 +28,7 @@ export type Highlight = {
 export type Appearance = {
   card: string
   glyph: string
+  label: Label
   background: Background
   glyphGlass: boolean
   texture: Texture
@@ -54,6 +55,18 @@ export type Texture = (typeof TEXTURES)[number]
  */
 export const BACKGROUNDS = ['Plain', 'Grid', 'Blueprint', 'Liquid glass'] as const
 export type Background = (typeof BACKGROUNDS)[number]
+
+/**
+/**
+ * The label badge: how tall its letters are against the card's short side, how much room they
+ * get inside the pill, and how far the pill sits from the bottom edge.
+ */
+export const LABEL = { size: 0.15, padding: 0.45, bottom: 0.09 }
+
+/** A line of text over the card, in a pill, the way a build badge reads. */
+export type Label = { text: string; color: string; fill: string }
+
+export const DEFAULT_LABEL: Label = { text: '', color: '#FFFFFF', fill: '#1C1C1E' }
 
 /**
  * The glass surface: the wash over the card, the light along its top edge, the shadow along
@@ -214,6 +227,7 @@ export function appearance(card: string, glyph = '#FFFFFF'): Appearance {
   return {
     card,
     glyph,
+    label: { ...DEFAULT_LABEL },
     background: 'Plain',
     glyphGlass: false,
     texture: 'None',

@@ -5,6 +5,7 @@ import {
   BLUEPRINT,
   GLASS,
   GLYPH_BASE,
+  LABEL,
   METAL_BANDS,
   PEEL,
   cardBox,
@@ -13,6 +14,7 @@ import {
   type Background,
   type Gradient,
   type IconDef,
+  type Label,
   type Metrics,
   type Mode,
   type Texture,
@@ -91,6 +93,33 @@ function guideLayer(background: Background, glyph: string) {
   )
 }
 
+/** A line of text in a pill, low in the card, the way a build badge reads. */
+function labelLayer(label: Label, short: number) {
+  const text = label.text.trim()
+  if (!text) return null
+  const size = short * LABEL.size
+
+  return (
+    <span
+      aria-hidden
+      className="absolute left-1/2 flex max-w-[92%] -translate-x-1/2 items-center justify-center overflow-hidden font-semibold"
+      style={{
+        bottom: short * LABEL.bottom,
+        height: size * (1 + LABEL.padding),
+        paddingInline: size * (LABEL.padding + 0.15),
+        borderRadius: 999,
+        background: label.fill,
+        color: label.color,
+        fontSize: size,
+        letterSpacing: size * 0.04,
+        boxShadow: 'inset 0 0 0 1px rgba(255, 255, 255, 0.18)',
+      }}
+    >
+      {text}
+    </span>
+  )
+}
+
 /** The stops of a CSS gradient, straight from the shared [offset, colour, alpha] table. */
 const stops = (table: [string, string, number][]) =>
   table.map(([offset, colour, alpha]) => `${hexToRgba(colour, alpha)} ${offset}`).join(', ')
@@ -114,6 +143,7 @@ function glassLayer() {
 
 function gradientLayer(g: Gradient) {
   const alpha = Math.min(1, g.strength / 100) * 0.35
+
 
   const stop = `rgba(255,255,255,${alpha})`
   const x = 50 + g.offsetX
@@ -213,6 +243,7 @@ export function IconCard({
   const glyphFilter = a.glyphGlass
     ? `opacity(${GLASS.glyphOpacity}) drop-shadow(0 ${GLASS.glyphRim.dy * (short / 72)}px ${GLASS.glyphRim.blur * (short / 72)}px ${hexToRgba('#FFFFFF', GLASS.glyphRim.opacity)}) drop-shadow(0 ${GLASS.glyphShadow.dy * (short / 72)}px ${GLASS.glyphShadow.blur * (short / 72)}px ${hexToRgba('#000000', GLASS.glyphShadow.opacity)})`
     : undefined
+  const label = labelLayer(a.label, short)
   const texture = textureLayer(a.texture)
 
   return (
@@ -269,6 +300,7 @@ export function IconCard({
         ) : null}
       </span>
       {peel}
+      {label}
     </div>
   )
 }
