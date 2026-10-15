@@ -288,10 +288,9 @@ export function buildIconSvg(
   glyph.setAttribute('x', String((totalWidth - glyphSize) / 2 + (short * offset.x) / 100))
   glyph.setAttribute('y', String((totalHeight - glyphSize) / 2 + (short * offset.y) / 100))
   const unit = short / 72
+  // The clone already carries the appearance's colour: paths of their own colour, and glyphs
+  // that follow `color`, both arrive as the preview draws them.
   glyph.setAttribute('color', a.glyph)
-  for (const path of glyph.querySelectorAll('path')) {
-    if (path.getAttribute('stroke') !== 'none') path.setAttribute('stroke', a.glyph)
-  }
 
   // Glass glyphs carry a rim light along their top and a shadow under them; the preview
   // draws the same two drops with CSS filters.

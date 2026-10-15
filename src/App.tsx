@@ -39,7 +39,7 @@ import {
 } from './model'
 import { movePathPoint } from './path'
 import { artworkFileFor, hydrate, readLibrary, writeLibrary } from './library'
-import { parseArtwork } from './svg'
+import { mergeColours, parseArtwork } from './svg'
 import { ComposerCanvas, ComposerInspector, ComposerSidebar } from './views/Composer'
 import { Design } from './views/Design'
 import { DesignInspector, type DesignTab } from './views/DesignInspector'
@@ -256,6 +256,11 @@ export default function App() {
       if (artwork) patchIcon({ artwork })
     }
     input.click()
+  }
+
+  const mergeArtworkColours = () => {
+    if (!selected?.artwork) return
+    patchIcon({ artwork: mergeColours(selected.artwork) })
   }
 
   const exportSvg = (forIconComposer = false) => {
@@ -522,6 +527,7 @@ export default function App() {
                     mode={mode}
                     onPatch={patchIcon}
                     onReplaceSvg={replaceSvg}
+                    onMergeColours={mergeArtworkColours}
                     onDelete={deleteIcon}
                   />
                 ) : (

@@ -2,16 +2,18 @@ import { Footer } from '../components/Footer'
 import { Glyph, IconCard } from '../components/IconCard'
 import { Group, Section, TextRow } from '../components/rows'
 import type { IconDef, Mode } from '../model'
+import { hasOwnColours } from '../svg'
 
 type Props = {
   icon: IconDef | undefined
   mode: Mode
   onPatch: (patch: Partial<IconDef>) => void
   onReplaceSvg: () => void
+  onMergeColours: () => void
   onDelete: () => void
 }
 
-export function LibraryInspector({ icon, mode, onPatch, onReplaceSvg, onDelete }: Props) {
+export function LibraryInspector({ icon, mode, onPatch, onReplaceSvg, onMergeColours, onDelete }: Props) {
   if (!icon) {
     return (
       <div className="grid flex-1 place-items-center px-8 text-center text-[12px] leading-relaxed text-neutral-400 dark:text-neutral-500">
@@ -62,6 +64,18 @@ export function LibraryInspector({ icon, mode, onPatch, onReplaceSvg, onDelete }
               </button>
             ) : null}
           </div>
+          {icon.artwork && hasOwnColours(icon.artwork.paths) ? (
+            <div className="flex px-3 pb-2">
+              <button
+                type="button"
+                title="Draw every layer in the glyph colour, so light and dark each tint the drawing"
+                onClick={onMergeColours}
+                className="h-7 flex-1 rounded-md bg-black/[0.05] text-[12px] text-neutral-700 hover:bg-black/[0.09] dark:bg-white/[0.1] dark:text-neutral-200"
+              >
+                Merge to one colour
+              </button>
+            </div>
+          ) : null}
         </Group>
       </div>
 
