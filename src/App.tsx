@@ -39,7 +39,7 @@ import {
 } from './model'
 import { movePathPoint } from './path'
 import { artworkFileFor, hydrate, readLibrary, writeLibrary } from './library'
-import { mergeColours, parseArtwork } from './svg'
+import { mergeColours, parseArtwork, withPaths } from './svg'
 import { ComposerCanvas, ComposerInspector, ComposerSidebar } from './views/Composer'
 import { Design } from './views/Design'
 import { DesignInspector, type DesignTab } from './views/DesignInspector'
@@ -193,14 +193,16 @@ export default function App() {
   }
 
   const editArtworkPoint = (pathIndex: number, pointIndex: number, x: number, y: number) => {
-    if (!selected?.artwork) return
-    const artwork = {
-      ...selected.artwork,
-      paths: selected.artwork.paths.map((path, index) =>
-        index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+    const paths = selected?.artwork?.paths
+    if (!selected?.artwork || !paths) return
+    patchIcon({
+      artwork: withPaths(
+        selected.artwork,
+        paths.map((path, index) =>
+          index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+        ),
       ),
-    }
-    patchIcon({ artwork })
+    })
   }
 
   const editMetrics = (patch: Partial<Metrics>) => {
@@ -425,7 +427,7 @@ export default function App() {
                       </ToolButton>
                     ) : (
                       <>
-                        {selected?.artwork ? (
+                        {selected?.artwork?.paths ? (
                           <ToolButton
                             title={editPoints ? 'Stop editing the artwork points' : 'Edit the artwork points'}
                             active={editPoints}

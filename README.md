@@ -31,10 +31,11 @@ start and writes every edit back on its own.
 - **Undo** — the toolbar's back and forward buttons step through the edits. A step covers a
   whole gesture, and an edit made after a step back replaces what forward was holding.
 - **Import** — `Import SVG…` in the Library inspector names the file after the icon's
-  identifier, trims it, and keeps the drawing's own colours, so a two-colour icon arrives as
-  it was drawn. `Merge to one colour` beside it is the step that draws every layer in the
-  glyph colour instead, which is what lets the light and dark appearances tint the drawing.
-  Either way the file reaches the folder on the next save, and a step back drops it.
+  identifier, fits it to the card, and keeps the drawing as it arrived: shapes, groups,
+  transforms, stylesheets, gradients and clip paths all come through, with their own colours.
+  `Merge to one colour` beside it is the step that draws every layer in the glyph colour
+  instead, which is what lets the light and dark appearances tint the drawing. Either way the
+  file reaches the folder on the next save, and a step back drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
 - The folder is tracked, artwork included, so a build and a deploy carry the same set.
@@ -91,11 +92,13 @@ the surface rather than on it.
 fold's shadow across the card. Like the shape and the corner radius it is set once, not per
 appearance, and it exports with the icon.
 
-**Editing an imported drawing** — an icon that carries an `.svg` gets a points button in the
-toolbar. It lays the drawing's anchors over the card: dragging one bends the shape, dragging
-the drawing itself moves it in the card, and the corner handles size it. A shape edit is
-written into the path, so it saves and exports with the icon; the move and the size are
-metrics, stored with the rest of the icon's settings.
+**Editing an imported drawing** — a drawing that is nothing but plain paths gets a points
+button in the toolbar. It lays the drawing's anchors over the card: dragging one bends the
+shape, dragging the drawing itself moves it in the card, and the corner handles size it. A
+shape edit is written into the path, so it saves and exports with the icon; the move and the
+size are metrics, stored with the rest of the icon's settings. A drawing built from groups,
+transforms, shapes or a stylesheet has no editor — there is no way to redraw it from its
+anchors that would keep what it holds — so it is imported and drawn as it is.
 
 **Components** are the pieces drawn over the card. The `+` beside the panels adds a text
 component — a line of text in a badge, the badge a build reads — and the component's tab
@@ -165,14 +168,25 @@ which sizes the frame from the icon's own reach — the highlight ring plus the 
 so a card can never paint over the frame that marks it as selected.
 
 Glyphs come from [Lucide](https://lucide.dev) by name (`src/glyphs.ts`), or from an SVG you
-import. `src/svg.ts` reads `<path>` elements and their `d`/`fill`/`stroke`/`stroke-width`
-attributes, taking presentation attributes from the `<svg>` tag as defaults; shapes, groups
-and transforms are ignored. Imported artwork is then trimmed: it is measured through
-`getBBox()`, fitted to a square box centred on its own bounds, and scaled so its longest
-side fills 83% of that box — the same share a bundled glyph fills, so imported and built-in
-icons carry the same optical weight. The drawing's colours come through as they are drawn;
-`mergeColours` in `src/svg.ts` is the separate step that draws every layer in the glyph
-colour, which is what the inspector's `Merge to one colour` runs.
+import. An imported file is kept as the drawing it holds: `src/svg.ts` reads its `<svg>` with
+the browser's own parser and renders the markup as it is, so shapes, groups, transforms,
+stylesheets, gradients, clip paths and colours all arrive as they were drawn. What the import
+adds is the box: the drawing is measured through `getBBox()`, fitted to a square box centred
+on its own bounds, and scaled so its longest side fills 83% of that box — the same share a
+bundled glyph fills, so imported and built-in icons carry the same optical weight. A file with
+no `viewBox` is drawn in its own width and height instead.
+
+Importing is also the trust boundary: scripts, embedded documents, event handlers and
+references that reach outside the file are dropped, ids and stylesheet selectors are scoped to
+the drawing's own key so two icons on one page cannot reach into each other, and a stylesheet
+cannot restyle the app's page. The drawing then lives in the folder inside a `<g>` that carries
+the root's own presentation attributes, which is what keeps a file's inheritance — and a file
+an older build wrote is wrapped the same way on its next save. `mergeColours` in `src/svg.ts`
+is the separate step that draws every layer in the glyph colour, which is what the inspector's
+`Merge to one colour` runs.
+
+A drawing that is nothing but `<path>` elements (a group around them at most) also comes back
+as paths, and that is what the point editor changes; `parseSvg` reads that flat subset.
 
 ## Export
 

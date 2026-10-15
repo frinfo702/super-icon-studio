@@ -64,7 +64,7 @@ export function LibraryInspector({ icon, mode, onPatch, onReplaceSvg, onMergeCol
               </button>
             ) : null}
           </div>
-          {icon.artwork && hasOwnColours(icon.artwork.paths) ? (
+          {icon.artwork && hasOwnColours(icon.artwork) ? (
             <div className="flex px-3 pb-2">
               <button
                 type="button"

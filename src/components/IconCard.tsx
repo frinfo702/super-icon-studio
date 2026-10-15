@@ -262,22 +262,11 @@ export function Glyph({
         viewBox={icon.artwork.viewBox}
         style={filter ? { filter } : undefined}
         color={color}
-        fill="none"
-        stroke="currentColor"
         strokeLinecap="round"
         strokeLinejoin="round"
-        strokeWidth={1.8}
-      >
-        {icon.artwork.paths.map((path, i) => (
-          <path
-            key={i}
-            d={path.d}
-            fill={path.fill}
-            stroke={path.stroke}
-            strokeWidth={path.strokeWidth}
-          />
-        ))}
-      </svg>
+        // The drawing is the file's own markup: whatever it is made of arrives as it was drawn.
+        dangerouslySetInnerHTML={{ __html: icon.artwork.markup }}
+      />
     )
   }
   const Lucide = GLYPHS[icon.glyph]
@@ -377,7 +366,7 @@ export function IconCard({
         style={{ width: glyphSize, height: glyphSize, transform: `translate(${shift.x}px, ${shift.y}px)` }}
       >
         <Glyph icon={icon} size={glyphSize} color={a.glyph} filter={glyphFilter} />
-        {editing && icon.artwork && onEditPoint && onEditMetrics ? (
+        {editing && icon.artwork?.paths && onEditPoint && onEditMetrics ? (
           <ArtworkPoints
             artwork={icon.artwork}
             box={glyphSize}
