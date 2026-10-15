@@ -45,7 +45,7 @@ const GLYPH_FILL = 0.833
 const WRAPPER = 'data-artwork'
 
 /** A box the app can draw: four numbers, so a file cannot write anything else into one. */
-const BOX = /^-?[\d.]+(?:[ ,]+-?[\d.]+){3}$/
+const BOX = /^-?[\d.]+(?:e[-+]?\d+)?(?:[ ,]+-?[\d.]+(?:e[-+]?\d+)?){3}$/i
 
 /** Elements that carry behaviour rather than drawing. */
 const BANNED = new Set(['script', 'foreignObject', 'iframe', 'object', 'embed', 'audio', 'video'])
@@ -64,6 +64,9 @@ const BOX_ATTRS = new Set([
 
 /** The attributes the point editor can carry off a path; anything else makes the drawing its own. */
 const PLAIN_ATTRS = new Set(['d', 'fill', 'stroke', 'stroke-width'])
+
+/** What a drawing may hold besides its paths: notes about it, which no editor changes. */
+const NOTES = /<(?:title|desc|metadata)\b[^>]*>[\s\S]*?<\/(?:title|desc|metadata)>/gi
 
 /* -------------------------------------------------------------------- the drawing a file holds */
 
@@ -89,9 +92,14 @@ function drawingBox(root: Element) {
  * else would pull the app's page (or a network fetch) into an imported icon.
  */
 export function tameStyle(text: string) {
-  return text
-    .replace(/@import[^;]*;?/gi, '')
-    .replace(/url\(\s*(?!["']?(?:#|data:))[^)]*\)/gi, 'none')
+  return (
+    text
+      .replace(/url\(\s*(?!["']?(?:#|data:))[^)]*\)/gi, 'none')
+      // An at-rule is what reaches another stylesheet, and CSS lets the spelling be escaped
+      // (`@\69 mport`), so the filter reads the character rather than the word. A block's body
+      // is ordinary rules, which stay and the browser still reads.
+      .replace(/@[^;{}]*(?:[;{]|$)/g, '')
+  )
 }
 
 /** An attribute's reference to a paint server, clip or filter, held to the file it came with. */
@@ -225,7 +233,7 @@ function strokeBleed(element: Element, inherited: { stroke: string; width: numbe
  * off-centre lands in the card the same way a bundled glyph does. Returns null when the drawing
  * has no measurable geometry.
  */
-export function fitDrawing(wrapper: Element, viewBox: string): string | null {
+function fitDrawing(wrapper: Element, viewBox: string): string | null {
   const svg = document.createElementNS(NS, 'svg')
   svg.setAttribute('viewBox', viewBox)
   svg.setAttribute('style', 'position:absolute;left:-10000px;top:0;width:100px;height:100px')
@@ -260,14 +268,14 @@ const markupOf = (element: Element) => new XMLSerializer().serializeToString(ele
  */
 export function plainPaths(markup: string): PathData[] | undefined {
   const wrapper = markup.match(/^<g\s([^>]*)>([\s\S]*)<\/g>$/)
-  const body = wrapper ? wrapper[2] : markup
+  const body = (wrapper ? wrapper[2] : markup).replace(NOTES, '')
   const elements = body.match(/<[^>]+>/g) ?? []
   if (elements.length === 0 || body.replace(/<[^>]+>/g, '').trim()) return undefined
 
   for (const element of elements) {
     const path = element.match(/^<path\b([^>]*?)\s*\/?>$/)
     if (!path) return undefined
-    for (const attribute of path[1].matchAll(/([A-Za-z-]+)\s*=/g)) {
+    for (const attribute of path[1].matchAll(/([A-Za-z0-9_:.-]+)\s*=/g)) {
       if (!PLAIN_ATTRS.has(attribute[1])) return undefined
     }
   }
@@ -347,16 +355,18 @@ function restyle(css: string) {
   )
 }
 
-/** Redraws a drawing from the paths the editor changed, keeping the drawing's own wrapper. */
+/** Redraws a drawing from the paths the editor changed, keeping the drawing's own wrapper and
+ *  the notes that came with it. */
 export function withPaths(artwork: Artwork, paths: PathData[]): Artwork {
   const opener = artwork.markup.match(/^<g\s[^>]*>/)?.[0] ?? ''
+  const notes = artwork.markup.match(NOTES)?.join('') ?? ''
   const body = paths
     .map(
       (path) =>
         `<path d="${path.d}" fill="${path.fill}" stroke="${path.stroke}" stroke-width="${path.strokeWidth}"/>`,
     )
     .join('')
-  return { ...artwork, markup: opener ? `${opener}${body}</g>` : body, paths }
+  return { ...artwork, markup: opener ? `${opener}${notes}${body}</g>` : body, paths }
 }
 
 /** Writes artwork back out for the icons folder. */

@@ -54,6 +54,9 @@ type Snapshot = { icons: IconDef[]; group: IconGroup }
 /** An edit must be still for this long before it is written and becomes a step back. */
 const SETTLE = 400
 
+/** The largest drawing an icon can keep: the set also lives in a browser's own storage. */
+const MAX_ARTWORK = 256 * 1024
+
 const START_GROUP: IconGroup = {
   ...DEFAULT_GROUP,
   layers: [ICONS[3].id, ICONS[4].id, ICONS[1].id, ICONS[0].id],
@@ -252,6 +255,14 @@ export default function App() {
     input.onchange = async () => {
       const file = input.files?.[0]
       if (!file) return
+      // The set is kept in the browser as well as the folder, and a browser holds a few
+      // megabytes: an icon the set cannot carry is refused rather than saved and lost.
+      if (file.size > MAX_ARTWORK) {
+        window.alert(
+          `${file.name} is over ${Math.round(MAX_ARTWORK / 1024)} KB, too large to keep in the icon set.`,
+        )
+        return
+      }
       const taken = new Set(icons.map((icon) => icon.artwork?.file).filter(Boolean) as string[])
       const name = selected?.artwork?.file ?? artworkFileFor(selected?.identifier ?? file.name, taken)
       const artwork = parseArtwork(await file.text(), name, { trim: true })

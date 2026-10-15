@@ -51,6 +51,12 @@ assert.equal(plainPaths('<g data-artwork="a"><g transform="translate(1 1)"><path
 assert.equal(plainPaths('<g data-artwork="a"><rect width="4" height="4"/></g>'), undefined)
 assert.equal(plainPaths('<g data-artwork="a"><style>.a{fill:red}</style><path class="a" d="M0 0h1"/></g>'), undefined)
 assert.equal(plainPaths('<g data-artwork="a"><path d="M0 0h1" opacity="0.4"/></g>'), undefined)
+assert.equal(plainPaths('<g data-artwork="a"><path d="M0 0h1" data-x2="layer"/></g>'), undefined)
+
+// The notes a drawing carries are not part of its paths, and an edit keeps them.
+assert.deepEqual(plainPaths('<g data-artwork="a"><title>Layer 1</title><path d="M0 0h1"/></g>'), [
+  { d: 'M0 0h1', fill: 'currentColor', stroke: 'none', strokeWidth: 1.8 },
+])
 
 const artwork = (markup: string): Artwork => ({
   file: 'a.svg',
@@ -97,6 +103,10 @@ const edited = withPaths(coloured, [
 assert.equal(edited.markup.startsWith('<g data-artwork="a">'), true)
 assert.equal(edited.markup.includes('d="M0 0h2"'), true)
 
+// The notes a drawing carries stay with it when an edit redraws it.
+const noted = artwork('<g data-artwork="a"><title>Layer 1</title><path d="M0 0h1"/></g>')
+assert.equal(withPaths(noted, noted.paths!).markup.includes('<title>Layer 1</title>'), true)
+
 // The file holds the drawing's own markup under the box the app fitted it to.
 assert.equal(
   serializeSvg(edited).startsWith(
@@ -107,6 +117,8 @@ assert.equal(
 
 // A stylesheet only reaches inside the file it came with.
 assert.equal(tameStyle('@import url("https://evil/x.css");.a{fill:red}'), '.a{fill:red}')
+assert.equal(tameStyle('@\\69 mport "/evil.css";.a{fill:red}'), '.a{fill:red}')
+assert.equal(tameStyle('@media all{.a{fill:red}}'), '.a{fill:red}}')
 assert.equal(
   tameStyle('.a{fill:url(#grad)}.b{background:url(https://evil/x.png)}'),
   '.a{fill:url(#grad)}.b{background:none}',

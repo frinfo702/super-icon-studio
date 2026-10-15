@@ -33,9 +33,10 @@ start and writes every edit back on its own.
 - **Import** — `Import SVG…` in the Library inspector names the file after the icon's
   identifier, fits it to the card, and keeps the drawing as it arrived: shapes, groups,
   transforms, stylesheets, gradients and clip paths all come through, with their own colours.
-  `Merge to one colour` beside it is the step that draws every layer in the glyph colour
-  instead, which is what lets the light and dark appearances tint the drawing. Either way the
-  file reaches the folder on the next save, and a step back drops it.
+  A file too large for the set to carry beside the rest (over 256 KB) is refused rather than
+  saved and lost. `Merge to one colour` beside it is the step that draws every layer in the
+  glyph colour instead, which is what lets the light and dark appearances tint the drawing.
+  Either way the file reaches the folder on the next save, and a step back drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
 - The folder is tracked, artwork included, so a build and a deploy carry the same set.
@@ -177,16 +178,18 @@ bundled glyph fills, so imported and built-in icons carry the same optical weigh
 no `viewBox` is drawn in its own width and height instead.
 
 Importing is also the trust boundary: scripts, embedded documents, event handlers and
-references that reach outside the file are dropped, ids and stylesheet selectors are scoped to
-the drawing's own key so two icons on one page cannot reach into each other, and a stylesheet
-cannot restyle the app's page. The drawing then lives in the folder inside a `<g>` that carries
-the root's own presentation attributes, which is what keeps a file's inheritance — and a file
-an older build wrote is wrapped the same way on its next save. `mergeColours` in `src/svg.ts`
-is the separate step that draws every layer in the glyph colour, which is what the inspector's
+references that reach outside the file — a stylesheet's at-rules and any external `url()`
+among them — are dropped, ids and stylesheet selectors are scoped to the drawing's own key so
+two icons on one page cannot reach into each other, and a stylesheet cannot restyle the app's
+page. The drawing then lives in the folder inside a `<g>` that carries the root's own
+presentation attributes, which is what keeps a file's inheritance — and a file an older build
+wrote is wrapped the same way on its next save. `mergeColours` in `src/svg.ts` is the separate
+step that draws every layer in the glyph colour, which is what the inspector's
 `Merge to one colour` runs.
 
-A drawing that is nothing but `<path>` elements (a group around them at most) also comes back
-as paths, and that is what the point editor changes; `parseSvg` reads that flat subset.
+A drawing that is nothing but `<path>` elements — its `title`, `desc` and `metadata` aside —
+also comes back as paths, and that is what the point editor changes; `parseSvg` reads that flat
+subset.
 
 ## Export
 
