@@ -1,4 +1,4 @@
-import type { PathData } from './model'
+import type { Artwork, PathData } from './model'
 
 function readAttrs(source: string) {
   const get = (name: string) =>
@@ -99,25 +99,39 @@ export function serializeSvg(artwork: { viewBox: string; paths: PathData[] }) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="${artwork.viewBox}">${body}</svg>`
 }
 
-/**
- * The app draws one glyph colour per appearance, so artwork arriving from outside is
- * re-pointed at `currentColor`. Gradients and empty fills are left alone.
- */
-export function toCurrentColor(source: string) {
-  return source.replace(/(fill|stroke)="(?!none|url|currentColor)([^"]+)"/gi, '$1="currentColor"')
+/** A layer wearing a colour of its own: not empty, not a gradient reference, not the glyph colour. */
+const ownColour = (value: string) => value !== 'none' && value !== 'currentColor' && !value.startsWith('url(')
+
+/** Whether the drawing has any layer of its own colour, which is what merging would replace. */
+export function hasOwnColours(paths: PathData[]) {
+  return paths.some((path) => ownColour(path.fill) || ownColour(path.stroke))
 }
 
 /**
- * Turns a file's contents into artwork. Files arriving from outside are trimmed and
- * flattened to the glyph colour; files that came back out of the icons folder are already
- * through this, and doing it again would shrink them a little on every round trip.
+ * The step after an import: draws every layer in one colour, the glyph colour of the appearance
+ * the icon is shown in, for a drawing that arrived in colours that do not fit the set. Empty
+ * layers and gradient references keep what they hold.
+ */
+export function mergeColours(artwork: Artwork): Artwork {
+  const one = (value: string) => (value === 'none' || value.startsWith('url(') ? value : 'currentColor')
+  return {
+    ...artwork,
+    paths: artwork.paths.map((path) => ({ ...path, fill: one(path.fill), stroke: one(path.stroke) })),
+  }
+}
+
+/**
+ * Turns a file's contents into artwork. An import keeps the drawing's own colours; drawing them
+ * all in the glyph colour is `mergeColours`, a step of its own. Files arriving from outside are
+ * fitted to the card; files that came back out of the icons folder are already through that, and
+ * doing it again would shrink them a little on every round trip.
  */
 export function parseArtwork(
   source: string,
   file: string,
   { trim }: { trim: boolean },
 ): { file: string; viewBox: string; paths: PathData[] } | null {
-  const parsed = parseSvg(trim ? toCurrentColor(source) : source)
+  const parsed = parseSvg(source)
   if (!parsed) return null
   const fitted = trim ? (trimPaths(parsed.paths, parsed.viewBox) ?? parsed) : parsed
   return { file, viewBox: fitted.viewBox, paths: fitted.paths }

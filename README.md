@@ -31,8 +31,10 @@ start and writes every edit back on its own.
 - **Undo** — the toolbar's back and forward buttons step through the edits. A step covers a
   whole gesture, and an edit made after a step back replaces what forward was holding.
 - **Import** — `Import SVG…` in the Library inspector names the file after the icon's
-  identifier, trims it, and re-points its colours at the glyph colour. It reaches the folder
-  on the next save, and a step back drops it.
+  identifier, trims it, and keeps the drawing's own colours, so a two-colour icon arrives as
+  it was drawn. `Merge to one colour` beside it is the step that draws every layer in the
+  glyph colour instead, which is what lets the light and dark appearances tint the drawing.
+  Either way the file reaches the folder on the next save, and a step back drops it.
 - The folder wins over the catalogue for artwork, so editing an `.svg` by hand — or dropping
   one in — is picked up on the next load.
 - The folder is tracked, artwork included, so a build and a deploy carry the same set.
@@ -168,7 +170,9 @@ attributes, taking presentation attributes from the `<svg>` tag as defaults; sha
 and transforms are ignored. Imported artwork is then trimmed: it is measured through
 `getBBox()`, fitted to a square box centred on its own bounds, and scaled so its longest
 side fills 83% of that box — the same share a bundled glyph fills, so imported and built-in
-icons carry the same optical weight.
+icons carry the same optical weight. The drawing's colours come through as they are drawn;
+`mergeColours` in `src/svg.ts` is the separate step that draws every layer in the glyph
+colour, which is what the inspector's `Merge to one colour` runs.
 
 ## Export
 
