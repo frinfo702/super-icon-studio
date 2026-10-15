@@ -53,7 +53,7 @@ export function ArtworkPoints({
     x: [(card.width - box) / -2 + clear, (card.width + box) / 2 - clear - corner],
     y: [(card.height - box) / -2 + clear, (card.height + box) / 2 - clear - corner],
   }
-  const points = artwork.paths.flatMap((path, pathIndex) =>
+  const points = (artwork.paths ?? []).flatMap((path, pathIndex) =>
     pathPoints(path.d).map((point) => ({ pathIndex, ...point })),
   )
 

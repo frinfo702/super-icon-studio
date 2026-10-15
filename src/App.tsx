@@ -39,7 +39,7 @@ import {
 } from './model'
 import { movePathPoint } from './path'
 import { artworkFileFor, hydrate, readLibrary, writeLibrary } from './library'
-import { mergeColours, parseArtwork } from './svg'
+import { mergeColours, parseArtwork, withPaths } from './svg'
 import { ComposerCanvas, ComposerInspector, ComposerSidebar } from './views/Composer'
 import { Design } from './views/Design'
 import { DesignInspector, type DesignTab } from './views/DesignInspector'
@@ -53,6 +53,9 @@ type Snapshot = { icons: IconDef[]; group: IconGroup }
 
 /** An edit must be still for this long before it is written and becomes a step back. */
 const SETTLE = 400
+
+/** The largest drawing an icon can keep: the set also lives in a browser's own storage. */
+const MAX_ARTWORK = 256 * 1024
 
 const START_GROUP: IconGroup = {
   ...DEFAULT_GROUP,
@@ -193,14 +196,16 @@ export default function App() {
   }
 
   const editArtworkPoint = (pathIndex: number, pointIndex: number, x: number, y: number) => {
-    if (!selected?.artwork) return
-    const artwork = {
-      ...selected.artwork,
-      paths: selected.artwork.paths.map((path, index) =>
-        index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+    const paths = selected?.artwork?.paths
+    if (!selected?.artwork || !paths) return
+    patchIcon({
+      artwork: withPaths(
+        selected.artwork,
+        paths.map((path, index) =>
+          index === pathIndex ? { ...path, d: movePathPoint(path.d, pointIndex, x, y) } : path,
+        ),
       ),
-    }
-    patchIcon({ artwork })
+    })
   }
 
   const editMetrics = (patch: Partial<Metrics>) => {
@@ -250,6 +255,14 @@ export default function App() {
     input.onchange = async () => {
       const file = input.files?.[0]
       if (!file) return
+      // The set is kept in the browser as well as the folder, and a browser holds a few
+      // megabytes: an icon the set cannot carry is refused rather than saved and lost.
+      if (file.size > MAX_ARTWORK) {
+        window.alert(
+          `${file.name} is over ${Math.round(MAX_ARTWORK / 1024)} KB, too large to keep in the icon set.`,
+        )
+        return
+      }
       const taken = new Set(icons.map((icon) => icon.artwork?.file).filter(Boolean) as string[])
       const name = selected?.artwork?.file ?? artworkFileFor(selected?.identifier ?? file.name, taken)
       const artwork = parseArtwork(await file.text(), name, { trim: true })
@@ -425,7 +438,7 @@ export default function App() {
                       </ToolButton>
                     ) : (
                       <>
-                        {selected?.artwork ? (
+                        {selected?.artwork?.paths ? (
                           <ToolButton
                             title={editPoints ? 'Stop editing the artwork points' : 'Edit the artwork points'}
                             active={editPoints}

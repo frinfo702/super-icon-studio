@@ -263,8 +263,13 @@ export type PathData = {
 export type Artwork = {
   /** File name inside the icons folder. */
   file: string
+  /** The box the drawing is drawn in, in its own coordinates. */
   viewBox: string
-  paths: PathData[]
+  /** The drawing as it arrived, rendered as it is: shapes, groups, transforms, stylesheets and
+   *  gradients all survive the import, colours included. */
+  markup: string
+  /** The drawing's paths, while it holds nothing but plain paths: what the point editor changes. */
+  paths?: PathData[]
 }
 
 export type IconDef = {
